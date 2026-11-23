@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AusTree Atlas — Australian Tree Index & Taxonomic Key</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="vendor/tailwind.js"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css" />
+  
+  <!-- Inter Font -->
+  <link href="vendor/fonts/fonts.css" rel="stylesheet">
+  <!-- Leaflet (species distribution maps) -->
+  <link href="vendor/leaflet/leaflet.css" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            eucalyptus: {
+              50: '#f2f7f4',
+              100: '#dfebd6',
+              200: '#c2d9b6',
+              300: '#9ec18e',
+              400: '#79a565',
+              500: '#5c8948',
+              600: '#466c36',
+              700: '#38562d',
+              800: '#2e4526',
+              900: '#273a21',
+              950: '#111f0e',
+            },
+            wattle: {
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+            },
+            reddust: {
+              500: '#c2410c',
+              600: '#9a3412',
+              800: '#7c2d12',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Cinzel', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars & Animations */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+
+    /* Ambient Canopy Sunbeam Effect */
+    .canopy-light {
+      background: radial-gradient(circle at 50% -20%, rgba(120, 180, 110, 0.15), transparent 70%);
+    }
+
+    .theme-daintree {
+      --bg-main: #06140d;
+      --card-bg: rgba(15, 35, 25, 0.85);
+      --accent-color: #34d399;
+    }
+
+    .theme-wattle {
+      --bg-main: #181307;
+      --card-bg: rgba(38, 30, 15, 0.85);
+      --accent-color: #facc15;
+    }
+
+    .theme-night {
+      --bg-main: #090d16;
+      --card-bg: rgba(20, 27, 45, 0.85);
+      --accent-color: #38bdf8;
+    }
+
+    /* SVG Plate Stylings */
+    .plate-bg {
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.15) 100%);
+    }
+
+    /* Custom Glassmorphism */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .dark .glass-panel {
+      background: rgba(18, 26, 20, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans transition-colors duration-300 antialiased selection:bg-eucalyptus-500 selection:text-white flex flex-col">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800/80 glass-panel shadow-sm transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-eucalyptus-600 to-eucalyptus-800 flex items-center justify-center text-white shadow-md shadow-eucalyptus-900/20">
+          <i class="fa-solid font-bold fa-tree text-lg text-wattle-400"></i>
+        </div>
+        <div>
+          <h1 class="font-serif text-lg font-bold tracking-wide text-eucalyptus-900 dark:text-eucalyptus-100 flex items-center gap-2">
+            AusTree Atlas
+            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v3.5 Standalone</span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Australian Botanical Index & Taxonomic Key</p>
+        </div>
+      </div>
+
+      <!-- Action Tools & Theme Selector -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        
+        <!-- View Mode Switcher: Field Photo vs Botanical Plate -->
+        <div class="bg-slate-200 dark:bg-slate-800/90 p-1 rounded-lg flex items-center text-xs font-medium border border-slate-300 dark:border-slate-700">
+          <button id="btn-view-photo" onclick="setViewMode('photo')" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all">
+            <i class="fa-solid fa-camera"></i>
+            <span class="hidden sm:inline">Field Photo</span>
+          </button>
+          <button id="btn-view-plate" onclick="setViewMode('plate')" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all">
+            <i class="fa-solid fa-pen-nib"></i>
+            <span class="hidden sm:inline">Botanical Plate</span>
+          </button>
+        </div>
+
+        <!-- Add Custom Record Button -->
+        <button onclick="openAddSpecimenModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-eucalyptus-600 hover:bg-eucalyptus-700 text-white shadow-sm flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden md:inline">Add Specimen</span>
+        </button>
+
+        <!-- CSV Export Button -->
+        <button onclick="exportFilteredCSV()" class="p-2 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition" title="Export Current Filtered List as CSV">
+          <i class="fa-solid fa-file-csv text-base text-eucalyptus-600 dark:text-eucalyptus-400"></i>
+        </button>
+
+        <!-- Theme Selector Menu -->
+        <div class="relative group">
+          <button class="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1" title="Visual Palette Theme">
+            <i class="fa-solid fa-palette"></i>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block z-50">
+            <div class="px-3 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Theme Preset</div>
+            <button onclick="setAppTheme('eucalyptus')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
+              <span>🌿 Eucalyptus Mist</span>
+            </button>
+            <button onclick="setAppTheme('daintree')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
+              <span>🌴 Daintree Biolume</span>
+            </button>
+            <button onclick="setAppTheme('wattle')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
+              <span>🌼 Wattle Sunset</span>
+            </button>
+            <button onclick="setAppTheme('night')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
+              <span>🌌 Night Canopy</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 canopy-light">
+    
+    <!-- TAXONOMIC KEY CONTROL PANEL -->
+    <section class="glass-panel p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition">
+      
+      <!-- Top Row: Search & Stats -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        
+        <!-- Quick Search Bar -->
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input 
+            type="text" 
+            id="search-input" 
+            oninput="handleSearchInput()"
+            placeholder="Search species by botanical name, common name, family, notes..." 
+            class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-eucalyptus-500 transition"
+          />
+          <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Filter Count Badges & Active Reset -->
+        <div class="flex items-center gap-3 justify-between md:justify-end">
+          <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+            Showing <span id="species-count-badge" class="text-eucalyptus-600 dark:text-eucalyptus-400 font-bold">0</span> of <span id="total-count-badge">0</span> species
+          </div>
+          <button onclick="resetTaxonomicKey()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-900/40 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate-left"></i> Reset Key
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Access Filter Selectors -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+        
+        <!-- Family Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-1">Family</label>
+          <select id="filter-family" onchange="applyFilters()" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-eucalyptus-500">
+            <option value="">All Families</option>
+          </select>
+        </div>
+
+        <!-- Genus Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-1">Genus</label>
+          <select id="filter-genus" onchange="applyFilters()" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-eucalyptus-500">
+            <option value="">All Genera</option>
+          </select>
+        </div>
+
+        <!-- Bark Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-1">Bark Habit</label>
+          <select id="filter-bark" onchange="applyFilters()" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-eucalyptus-500">
+            <option value="">All Bark Types</option>
+            <option value="Smooth / Gum">Smooth / Gum Bark</option>
+            <option value="Ironbark">Ironbark (Deep Rutted)</option>
+            <option value="Stringybark">Stringybark (Fibrous)</option>
+            <option value="Tessellated / Bloodwood">Tessellated / Bloodwood</option>
+            <option value="Box Bark">Box Bark (Sub-fibrous)</option>
+            <option value="Ribbon Bark">Ribbon Bark (Peeling)</option>
+            <option value="Paperbark">Paperbark (Layered Sheet)</option>
+            <option value="Fissured Rough">Fissured Rough Bark</option>
+            <option value="Serrated / Corky">Serrated / Corky Bark</option>
+            <option value="Bottle Trunk">Swollen / Bottle Trunk</option>
+          </select>
+        </div>
+
+        <!-- Foliage Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-1">Foliage Type</label>
+          <select id="filter-foliage" onchange="applyFilters()" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-eucalyptus-500">
+            <option value="">All Foliage Types</option>
+            <option value="Phyllodes (Modified Stem)">Phyllodes (Acacia Stems)</option>
+            <option value="Bipinnate Leaves">Bipinnate (Feathery)</option>
+            <option value="Lanceolate Sickle">Lanceolate / Sickle (Gum Leaf)</option>
+            <option value="Serrated Hard">Serrated Hard (Banksia/Grevillea)</option>
+            <option value="Jointed Branchlets">Jointed Branchlets (Casuarina)</option>
+            <option value="Conifer Scales / Needles">Conifer Scales / Needles</option>
+            <option value="Broad Rainforest Leaf">Broad Rainforest Leaf</option>
+            <option value="Palmate / Fan Frond">Palmate / Fan Frond</option>
+          </select>
+        </div>
+
+        <!-- State / Territory Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-1">Native to State</label>
+          <select id="filter-state" onchange="applyFilters()" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-eucalyptus-500">
+            <option value="">Australia-Wide (All)</option>
+            <option value="NSW">NSW (New South Wales)</option>
+            <option value="VIC">VIC (Victoria)</option>
+            <option value="QLD">QLD (Queensland)</option>
+            <option value="WA">WA (Western Australia)</option>
+            <option value="SA">SA (South Australia)</option>
+            <option value="TAS">TAS (Tasmania)</option>
+            <option value="NT">NT (Northern Territory)</option>
+            <option value="ACT">ACT (Capital Territory)</option>
+          </select>
+        </div>
+
+        <!-- Biome Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase mb-1">Biome / Habitat</label>
+          <select id="filter-biome" onchange="applyFilters()" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-eucalyptus-500">
+            <option value="">All Biomes</option>
+            <option value="Rainforest">Tropical & Subtropical Rainforest</option>
+            <option value="Dry Sclerophyll">Dry Sclerophyll Forest</option>
+            <option value="Wet Sclerophyll">Wet Tall Eucalypt Forest</option>
+            <option value="Arid Mallee">Arid Mallee & Mulga Scrub</option>
+            <option value="Subalpine">Subalpine & High Montane</option>
+            <option value="Coastal Heath">Coastal Heath & Sand Dunes</option>
+            <option value="Riparian Wetlands">Riparian & Swampland</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Alphabetical A-Z Quick Jump Strip -->
+      <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center overflow-x-auto no-scrollbar gap-1 text-xs">
+        <span class="text-[10px] uppercase font-bold text-slate-400 mr-2 shrink-0">Quick Jump:</span>
+        <button onclick="filterLetter('')" id="letter-btn-ALL" class="az-btn active-az px-2 py-1 rounded bg-eucalyptus-600 text-white font-semibold transition shrink-0">ALL</button>
+        <div id="az-buttons-container" class="flex items-center gap-1"></div>
+      </div>
+
+    </section>
+
+    <!-- SPECIES GRID DISPLAY CONTAINER -->
+    <section class="flex-1 flex flex-col gap-4">
+      
+      <!-- Layout & View Bar -->
+      <div class="flex items-center justify-between px-1">
+        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
+          <span id="active-filter-summary">Displaying all taxonomic records</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Page Size / Limit Controls -->
+          <label class="text-xs text-slate-500">Per page:</label>
+          <select id="page-size-select" onchange="changePageSize()" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs rounded-md px-2 py-1 text-slate-700 dark:text-slate-300">
+            <option value="24">24</option>
+            <option value="48">48</option>
+            <option value="96">96</option>
+            <option value="9999">All</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SPECIES GRID -->
+      <div id="species-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Dynamically Populated Cards -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden glass-panel p-12 rounded-2xl text-center flex flex-col items-center justify-center my-8">
+        <div class="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center text-2xl mb-3">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">No Specimen Matching Key Criteria</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mb-4">Try broadening your search query, selecting different bark/foliage traits, or resetting the taxonomic key filters.</p>
+        <button onclick="resetTaxonomicKey()" class="px-4 py-2 rounded-xl bg-eucalyptus-600 hover:bg-eucalyptus-700 text-white font-semibold text-xs transition">
+          Reset All Filters
+        </button>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div id="pagination-controls" class="flex items-center justify-between pt-4 pb-8 border-t border-slate-200 dark:border-slate-800">
+        <button id="prev-page-btn" onclick="changePage(-1)" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-chevron-left mr-1"></i> Previous
+        </button>
+        <span id="page-indicator" class="text-xs font-medium text-slate-500 dark:text-slate-400">Page 1 of 1</span>
+        <button id="next-page-btn" onclick="changePage(1)" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          Next <i class="fa-solid fa-chevron-right ml-1"></i>
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- LIGHTBOX / FULLSCREEN PHOTO MODAL -->
+  <div id="lightbox-modal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4">
+    <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl p-2 z-10 transition">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="relative max-w-4xl max-h-[85vh] flex flex-col items-center">
+      <img id="lightbox-img" src="" alt="High resolution species photo" class="max-h-[75vh] w-auto object-contain rounded-lg shadow-2xl border border-white/10" />
+      <div class="mt-4 text-center">
+        <h4 id="lightbox-title" class="text-lg font-serif font-bold text-white italic"></h4>
+        <p id="lightbox-subtitle" class="text-xs text-emerald-400 font-sans"></p>
+        <p id="lightbox-attr" class="text-[11px] text-slate-400 mt-1 font-mono"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD SPECIMEN CUSTOM DRAWER / MODAL -->
+  <div id="add-specimen-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 class="font-serif text-base font-bold text-eucalyptus-900 dark:text-eucalyptus-100 flex items-center gap-2">
+          <i class="fa-solid fa-folder-plus text-eucalyptus-600"></i> Add Field Herbarium Record
+        </h3>
+        <button onclick="closeAddSpecimenModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="specimen-form" onsubmit="saveCustomSpecimen(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Scientific Name *</label>
+          <input type="text" id="input-sci-name" required placeholder="e.g. Eucalyptus sideroxylon" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-eucalyptus-500" />
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">Common Name *</label>
+            <input type="text" id="input-common-name" required placeholder="e.g. Red Ironbark" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-eucalyptus-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Family *</label>
+            <input type="text" id="input-family" required placeholder="e.g. Myrtaceae" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-eucalyptus-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">Bark Type</label>
+            <select id="input-bark" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2">
+              <option value="Smooth / Gum">Smooth / Gum Bark</option>
+              <option value="Ironbark">Ironbark (Deep Rutted)</option>
+              <option value="Stringybark">Stringybark (Fibrous)</option>
+              <option value="Tessellated / Bloodwood">Tessellated / Bloodwood</option>
+              <option value="Box Bark">Box Bark (Sub-fibrous)</option>
+              <option value="Ribbon Bark">Ribbon Bark (Peeling)</option>
+              <option value="Paperbark">Paperbark (Layered Sheet)</option>
+              <option value="Fissured Rough">Fissured Rough Bark</option>
+              <option value="Serrated / Corky">Serrated / Corky Bark</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Foliage Type</label>
+            <select id="input-foliage" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2">
+              <option value="Lanceolate Sickle">Lanceolate Sickle</option>
+              <option value="Phyllodes (Modified Stem)">Phyllodes (Acacia Stems)</option>
+              <option value="Bipinnate Leaves">Bipinnate Leaves</option>
+              <option value="Serrated Hard">Serrated Hard</option>
+              <option value="Broad Rainforest Leaf">Broad Rainforest Leaf</option>
+              <option value="Jointed Branchlets">Jointed Branchlets</option>
+              <option value="Conifer Scales / Needles">Conifer Scales / Needles</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">States (Comma separated)</label>
+            <input type="text" id="input-states" placeholder="e.g. NSW, VIC, QLD" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Height (m)</label>
+            <input type="text" id="input-height" placeholder="e.g. 15-30m" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Diagnostic Ecology & Botanical Notes</label>
+          <textarea id="input-notes" rows="3" placeholder="Key identifying characteristics, operculum traits, habitat altitude..." class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-eucalyptus-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <button type="button" onclick="closeAddSpecimenModal()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-eucalyptus-600 hover:bg-eucalyptus-700 font-semibold text-white transition">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- BUNDLED OFFLINE SPECIES PHOTOS (generated by tools/fetch_photos.py) -->
+  <script src="photos/photos.js"></script>
+  <!-- REAL SPECIES IMPORTED FROM THE ATLAS OF LIVING AUSTRALIA (tools/fetch_ala.py) -->
+  <script src="data/ala_species.js"></script>
+  <!-- NATIVE STATE RANGES (Kew WCVP via GBIF, tools/fetch_native.py) -->
+  <script src="data/native_ranges.js"></script>
+
+  <!-- APPLICATION LOGIC & COMPREHENSIVE BOTANICAL DATASET -->
+  <script>
+    /* ==========================================================================
+       1. SPECIES DATASET: CURATED KEY SPECIES + ATLAS OF LIVING AUSTRALIA IMPORT
+       ========================================================================== */
+
+    // Core families and genera definitions used for dynamic taxonomy generation
+    const FAMILIES_SCHEMA = [
+      { family: "Myrtaceae", genera: ["Eucalyptus", "Corymbia", "Angophora", "Melaleuca", "Syzygium", "Lophostemon", "Tristaniopsis", "Backhousia", "Leptospermum", "Callistemon"] },
+      { family: "Fabaceae", genera: ["Acacia", "Castanospermum", "Erythrina", "Pongamia", "Barklya", "Archidendron", "Senna"] },
+      { family: "Proteaceae", genera: ["Banksia", "Grevillea", "Telopea", "Stenocarpus", "Hakea", "Macadamia", "Orites", "Lomatia", "Persoonia"] },
+      { family: "Casuarinaceae", genera: ["Allocasuarina", "Casuarina fontana", "Casuarina"] },
+      { family: "Araucariaceae", genera: ["Araucaria", "Agathis", "Wollemia"] },
+      { family: "Podocarpaceae", genera: ["Podocarpus", "Phyllocladus", "Lepidothamnus"] },
+      { family: "Cupressaceae", genera: ["Callitris", "Athrotaxis", "Diselma"] },
+      { family: "Nothofagaceae", genera: ["Nothofagus", "Fuscospora"] },
+      { family: "Moraceae", genera: ["Ficus", "Streblus"] },
+      { family: "Malvaceae", genera: ["Brachychiton", "Commersonia", "Heritiera"] },
+      { family: "Meliaceae", genera: ["Toona", "Synoum", "Melia", "Dysoxylum"] },
+      { family: "Rutaceae", genera: ["Flindersia", "Acronychia", "Geijera", "Citrus"] },
+      { family: "Sapindaceae", genera: ["Cupaniopsis", "Jagera", "Alectryon", "Diploglottis", "Atalaya"] },
+      { family: "Lauraceae", genera: ["Cryptocarya", "Endiandra", "Beilschmiedia", "Litsea"] },
+      { family: "Atherospermataceae", genera: ["Doryphora", "Atherosperma"] },
+      { family: "Cunoniaceae", genera: ["Ceratopetalum", "Schizomeria", "Caldcluvia", "Eucryphia"] },
+      { family: "Elaeocarpaceae", genera: ["Elaeocarpus", "Sloanea"] },
+      { family: "Pittosporaceae", genera: ["Pittosporum", "Hymenosporum"] },
+      { family: "Arecaceae", genera: ["Livistona", "Archontophoenix", "Linospadix", "Carpentaria"] },
+      { family: "Santalaceae", genera: ["Santalum", "Exocarpos"] },
+      { family: "Rhamnaceae", me: "Rhamnaceae", genera: ["Alphitonia", "Pomaderris"] },
+      { family: "Scrophulariaceae", genera: ["Eremophila"] },
+      { family: "Asphodelaceae", genera: ["Xanthorrhoea"] },
+      { family: "Rhizophoraceae", genera: ["Rhizophora", "Bruguiera"] },
+      { family: "Lamiaceae", genera: ["Clerodendrum", "Gmelina", "Prostanthera"] },
+      { family: "Araliaceae", genera: ["Polyscias", "Schefflera"] },
+      { family: "Combretaceae", genera: ["Terminalia fontana", "Terminalia"] },
+      { family: "Sapotaceae", genera: ["Pouteria", "Planchonella"] },
+      { family: "Ebenaceae", genera: ["Diospyros"] },
+      { family: "Anacardiaceae", genera: ["Pleiogynium", "Euroschinus"] }
+    ];
+
+    const ALL_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "NT", "ACT"];
+
+    // Base seed catalog of iconic key Australian species
+    const RAW_KEY_SPECIES = [
+      { sci: "Eucalyptus regnans", common: "Mountain Ash", family: "Myrtaceae", genus: "Eucalyptus", states: ["VIC", "TAS"], bark: "Smooth / Gum", foliage: "Lanceolate Sickle", biome: "Wet Sclerophyll", height: "70-100m", notes: "Tallest flowering plant on Earth. Massive smooth whitish trunk with basal fibrous stocking." },
+      { sci: "Eucalyptus marginata", common: "Jarrah", family: "Myrtaceae", genus: "Eucalyptus", states: ["WA"], bark: "Stringybark", foliage: "Lanceolate Sickle", biome: "Dry Sclerophyll", height: "30-40m", notes: "Renowned timber species endemic to SW Australia. Fibrous, longitudinally fissured bark." },
+      { sci: "Eucalyptus camaldulensis", common: "River Red Gum", family: "Myrtaceae", genus: "Eucalyptus", states: ["NSW", "VIC", "QLD", "WA", "SA", "NT", "ACT"], bark: "Smooth / Gum", foliage: "Lanceolate Sickle", biome: "Riparian Wetlands", height: "20-45m", notes: "Widespread iconic inland tree. Smooth mottled white/grey bark with red sap heartwood." },
+      { sci: "Eucalyptus globulus", common: "Tasmanian Blue Gum", family: "Myrtaceae", genus: "Eucalyptus", states: ["TAS", "VIC"], bark: "Ribbon Bark", foliage: "Lanceolate Sickle", biome: "Wet Sclerophyll", height: "45-70m", notes: "Floral emblem of Tasmania. Large square glaucous juvenile foliage, solitary woody capsules." },
+      { sci: "Eucalyptus sideroxylon", common: "Red Ironbark", family: "Myrtaceae", genus: "Eucalyptus", states: ["NSW", "VIC", "QLD"], bark: "Ironbark", foliage: "Lanceolate Sickle", biome: "Dry Sclerophyll", height: "20-30m", notes: "Deeply rutted, dark charcoal-to-black bark exudates deep red kino resin. Pink/red flowers." },
+      { sci: "Corymbia citriodora", common: "Lemon-Scented Gum", family: "Myrtaceae", genus: "Corymbia", states: ["QLD", "NSW"], bark: "Smooth / Gum", foliage: "Lanceolate Sickle", biome: "Dry Sclerophyll", height: "25-40m", notes: "Striking smooth powder-white trunk. Foliage contains rich citronellal essential oil." },
+      { sci: "Corymbia ficifolia", common: "Red Flowering Gum", family: "Myrtaceae", genus: "Corymbia", states: ["WA"], bark: "Tessellated / Bloodwood", foliage: "Lanceolate Sickle", biome: "Coastal Heath", height: "8-15m", notes: "Spectacular crimson inflorescences. Urn-shaped woody gumnuts (woody capsules)." },
+      { sci: "Angophora costata", common: "Sydney Red Gum", family: "Myrtaceae", genus: "Angophora", states: ["NSW", "QLD"], bark: "Smooth / Gum", foliage: "Lanceolate Sickle", biome: "Dry Sclerophyll", height: "15-30m", notes: "Gnarled twisting limbs with bright salmon-pink bark shedding in mid-summer." },
+      { sci: "Acacia pycnantha", common: "Golden Wattle", family: "Fabaceae", genus: "Acacia", states: ["VIC", "SA", "NSW", "ACT"], bark: "Smooth / Gum", foliage: "Phyllodes (Modified Stem)", biome: "Dry Sclerophyll", height: "4-8m", notes: "Official Floral Emblem of Australia. Bright yellow globose flower heads in late winter." },
+      { sci: "Acacia melanoxylon", common: "Australian Blackwood", family: "Fabaceae", genus: "Acacia", states: ["TAS", "VIC", "NSW", "QLD", "SA"], bark: "Fissured Rough", foliage: "Phyllodes (Modified Stem)", biome: "Wet Sclerophyll", height: "15-35m", notes: "Highly prized dark cabinetry timber. Dark grey furrowed bark, falcate phyllodes." },
+      { sci: "Acacia aneura", common: "Mulga", family: "Fabaceae", genus: "Acacia", states: ["WA", "NT", "SA", "QLD", "NSW"], bark: "Fissured Rough", foliage: "Phyllodes (Modified Stem)", biome: "Arid Mallee", height: "4-10m", notes: "Keystone dominant arid woodland species. Narrow grey silver phyllodes." },
+      { sci: "Banksia serrata", common: "Old Man Banksia", family: "Proteaceae", genus: "Banksia", states: ["NSW", "VIC", "TAS", "QLD"], bark: "Serrated / Corky", foliage: "Serrated Hard", biome: "Coastal Heath", height: "6-15m", notes: "Thick knobby gnarled trunk with heavy corky bark. Large yellow cylindrical floral cones." },
+      { sci: "Banksia grandis", common: "Bull Banksia", family: "Proteaceae", genus: "Banksia", states: ["WA"], bark: "Serrated / Corky", foliage: "Serrated Hard", biome: "Dry Sclerophyll", height: "5-10m", notes: "Enormous serrated triangular leaf lobes up to 45cm long. Huge yellow spikes." },
+      { sci: "Grevillea robusta", common: "Silky Oak", family: "Proteaceae", genus: "Grevillea", states: ["QLD", "NSW"], bark: "Fissured Rough", foliage: "Bipinnate Leaves", biome: "Rainforest", height: "20-35m", notes: "Largest genus member. Brilliant golden-orange shower of flowers in spring." },
+      { sci: "Telopea speciosissima", common: "New South Wales Waratah", family: "Proteaceae", genus: "Telopea", states: ["NSW"], bark: "Smooth / Gum", foliage: "Serrated Hard", biome: "Dry Sclerophyll", height: "3-5m", notes: "Floral emblem of NSW. Crimson dome flower head surrounded by red bracts." },
+      { sci: "Allocasuarina verticillata", common: "Drooping Sheoak", family: "Casuarinaceae", genus: "Allocasuarina", states: ["VIC", "TAS", "NSW", "SA"], bark: "Fissured Rough", foliage: "Jointed Branchlets", biome: "Coastal Heath", height: "5-10m", notes: "Drooping needle-like photosynthetic branchlets. Important food source for Black Cockatoos." },
+      { sci: "Araucaria heterophylla", common: "Norfolk Island Pine", family: "Araucariaceae", genus: "Araucaria", states: ["NSW", "QLD", "VIC"], bark: "Fissured Rough", foliage: "Conifer Scales / Needles", biome: "Coastal Heath", height: "30-60m", notes: "Distinctive geometric symmetrical branching silhouette. Highly salt-tolerant." },
+      { sci: "Araucaria bidwillii", common: "Bunya Pine", family: "Araucariaceae", genus: "Araucaria", states: ["QLD"], bark: "Fissured Rough", foliage: "Conifer Scales / Needles", biome: "Rainforest", height: "30-45m", notes: "Ancient Jurassic conifer. Produces huge edible cone nuts weighing up to 10kg." },
+      { sci: "Wollemia nobilis", common: "Wollemi Pine", family: "Araucariaceae", genus: "Wollemia", states: ["NSW"], bark: "Serrated / Corky", foliage: "Conifer Scales / Needles", biome: "Wet Sclerophyll", height: "25-40m", notes: "Lazarus species discovered in 1994. Unique bubble-chocolate cork bark habit." },
+      { sci: "Ficus macrophylla", common: "Moreton Bay Fig", family: "Moraceae", genus: "Ficus", states: ["QLD", "NSW"], bark: "Smooth / Gum", foliage: "Broad Rainforest Leaf", biome: "Rainforest", height: "25-35m", notes: "Massive buttressed roots, sprawling canopy with glossy leathery leaves and dark orange figs." },
+      { sci: "Ficus rubiginosa", common: "Port Jackson Fig", family: "Moraceae", genus: "Ficus", states: ["NSW", "QLD"], bark: "Smooth / Gum", foliage: "Broad Rainforest Leaf", biome: "Dry Sclerophyll", height: "15-25m", notes: "Rusty brown felty underside on leaves. Starts as banyan-like hemiepiphyte." },
+      { sci: "Brachychiton rupestris", common: "Queensland Bottle Tree", family: "Malvaceae", genus: "Brachychiton", states: ["QLD"], bark: "Bottle Trunk", foliage: "Broad Rainforest Leaf", biome: "Dry Sclerophyll", height: "10-20m", notes: "Swollen water-storing bulbous trunk shaped like a wine bottle." },
+      { sci: "Brachychiton acerifolius", common: "Illawarra Flame Tree", family: "Malvaceae", genus: "Brachychiton", states: ["NSW", "QLD"], bark: "Smooth / Gum", foliage: "Broad Rainforest Leaf", biome: "Rainforest", height: "15-35m", notes: "Drops foliage entirely in spring to produce a brilliant fiery scarlet bell-flower canopy." },
+      { sci: "Toona ciliata", common: "Australian Red Cedar", family: "Meliaceae", genus: "Toona", states: ["NSW", "QLD"], bark: "Fissured Rough", foliage: "Bipinnate Leaves", biome: "Rainforest", height: "30-45m", notes: "'Red Gold' timber species. Deciduous rainforest giant with fragrant pinnate foliage." },
+      { sci: "Flindersia australis", common: "Crow's Ash", family: "Rutaceae", genus: "Flindersia", states: ["QLD", "NSW"], bark: "Fissured Rough", foliage: "Bipinnate Leaves", biome: "Rainforest", height: "25-40m", notes: "Scaly bark, produces distinctive spiky woody seed capsules opening into 5 star-like valves." },
+      { sci: "Nothofagus cunninghamii", common: "Myrtle Beech", family: "Nothofagaceae", genus: "Nothofagus", states: ["TAS", "VIC"], bark: "Fissured Rough", foliage: "Broad Rainforest Leaf", biome: "Wet Sclerophyll", height: "25-40m", notes: "Ancient Gondwanan relict. Tiny dark green crinkled leaves with bronze spring flush." },
+      { sci: "Nothofagus gunnii", common: "Tanglefoot Beech", family: "Nothofagaceae", genus: "Nothofagus", states: ["TAS"], bark: "Fissured Rough", foliage: "Broad Rainforest Leaf", biome: "Subalpine", height: "3-8m", notes: "Australia's only native cold-deciduous tree. Brilliant gold/autumn leaf transformation in April." },
+      { sci: "Xanthorrhoea australis", common: "Austral Grass Tree", family: "Asphodelaceae", genus: "Xanthorrhoea", states: ["VIC", "TAS", "NSW", "SA"], bark: "Serrated / Corky", foliage: "Phyllodes (Modified Stem)", biome: "Dry Sclerophyll", height: "2-5m", notes: "Fire-adapted resinous black trunk crowned with dense skirt of wire-like foliage and tall spike." },
+      { sci: "Livistona australis", common: "Cabbage Tree Palm", family: "Arecaceae", genus: "Livistona", states: ["NSW", "VIC", "QLD"], bark: "Fissured Rough", foliage: "Palmate / Fan Frond", biome: "Rainforest", height: "15-25m", notes: "Tall fan palm native to SE Australia. Heart of palm eaten by Indigenous Australians." },
+      { sci: "Rhizophora stylosa", common: "Red Mangrove", family: "Rhizophoraceae", genus: "Rhizophora", states: ["QLD", "NT", "WA", "NSW"], bark: "Smooth / Gum", foliage: "Broad Rainforest Leaf", biome: "Riparian Wetlands", height: "5-12m", notes: "Intertidal stilt-rooted mangrove stabilizing estuarine shorelines with viviparous seedlings." }
+    ];
+
+    // Build the dataset: hand-written key species (full traits) + real species
+    // imported from the Atlas of Living Australia (names, families, states, photos).
+    const NOT_RECORDED = "Not recorded";
+
+    // Leaf type is only filled in where the genus settles it for every species.
+    function foliageFromGenus(genus) {
+      if (["Eucalyptus", "Corymbia", "Angophora"].includes(genus)) return "Lanceolate Sickle";
+      if (["Allocasuarina", "Casuarina"].includes(genus)) return "Jointed Branchlets";
+      if (["Araucaria", "Wollemia", "Callitris", "Athrotaxis", "Diselma"].includes(genus)) return "Conifer Scales / Needles";
+      if (genus === "Livistona") return "Palmate / Fan Frond";
+      return NOT_RECORDED;
+    }
+
+    function generateFull520SpeciesDataset() {
+      const ala = window.ALA_SPECIES || [];
+      const alaByName = {};
+      ala.forEach(a => { alaByName[a.sci.toLowerCase()] = a; });
+
+      const curated = RAW_KEY_SPECIES.map(s => {
+        const a = alaByName[s.sci.toLowerCase()];
+        const base = a ? { ...s, curated: true, occ: a.occ, guid: a.guid, alaPhoto: a.photo } : { ...s, curated: true };
+        return withNativeRange(base, s.states);
+      });
+      const have = new Set(curated.map(s => s.sci.toLowerCase()));
+
+      const imported = ala
+        .filter(a => !have.has(a.sci.toLowerCase()))
+        .map(a => withNativeRange({
+          sci: a.sci,
+          common: a.common || "No common name recorded",
+          family: a.family,
+          genus: a.genus,
+          states: a.states,
+          bark: NOT_RECORDED,
+          foliage: foliageFromGenus(a.genus),
+          biome: NOT_RECORDED,
+          height: NOT_RECORDED,
+          notes: `Imported from the Atlas of Living Australia (${a.occ.toLocaleString()} occurrence records).` +
+                 ` Bark, habitat and height are not yet recorded in this atlas.`,
+          occ: a.occ,
+          guid: a.guid,
+          alaPhoto: a.photo
+        }, a.states))
+        .sort((x, y) => x.sci.localeCompare(y.sci));
+
+      return [...curated, ...imported];
+    }
+
+    // Native range: states where the species is native (Kew WCVP). Falls back to
+    // states with ALA records only when WCVP has no entry for the species.
+    const ISLAND_CODES = { "Norfolk Island": "NFK", "Lord Howe Island": "LHI", "Coral Sea Islands": "CSI" };
+    function withNativeRange(sp, fallbackStates) {
+      const nr = (window.NATIVE_RANGES || {})[sp.sci];
+      if (nr) {
+        sp.states = nr.states;
+        sp.nativeOther = nr.other || [];
+        sp.rangeSource = 'native';
+      } else {
+        sp.states = fallbackStates || [];
+        sp.nativeOther = [];
+        sp.rangeSource = 'records';
+      }
+      return sp;
+    }
+
+    // Best offline photo for a record: curated iNaturalist photo, else ALA thumbnail.
+    function getBundledPhoto(sp) {
+      const inat = (window.BUNDLED_PHOTOS || {})[sp.sci];
+      if (inat) return { file: inat.file, large: inat.file, attr: inat.attr, license: inat.license, via: 'iNaturalist' };
+      return sp.alaPhoto || null;
+    }
+
+    // Master state
+    let ALL_SPECIES = [];
+    let FILTERED_SPECIES = [];
+    let currentViewMode = 'photo'; // 'photo' or 'plate'
+    let currentActiveLetter = '';
+    let currentPage = 1;
+    let pageSize = 24;
+    let cachedPhotoUrls = {};
+
+    /* ==========================================================================
+       2. APP INITIALIZATION & LOCALSTORAGE MANAGEMENT
+       ========================================================================== */
+
+    window.onload = function() {
+      // Load saved preferences
+      const savedView = localStorage.getItem('austree_view_mode');
+      if (savedView) currentViewMode = savedView;
+
+      const savedTheme = localStorage.getItem('austree_theme') || 'eucalyptus';
+      setAppTheme(savedTheme, false);
+
+      // Load cached photo URLs
+      const storedPhotos = localStorage.getItem('austree_photo_cache_v2');
+      if (storedPhotos) {
+        try { cachedPhotoUrls = JSON.parse(storedPhotos); } catch(e) {}
+      }
+
+      // Initialize species database
+      ALL_SPECIES = generateFull520SpeciesDataset();
+
+      // Load user added custom records from localStorage
+      const userRecords = localStorage.getItem('austree_custom_records');
+      if (userRecords) {
+        try {
+          const parsed = JSON.parse(userRecords);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(r => { r.custom = true; });
+            ALL_SPECIES = [...parsed, ...ALL_SPECIES];
+          }
+        } catch(e) {}
+      }
+
+      // Initialize UI controls
+      populateDropdownFilters();
+      buildAZNavigation();
+      updateViewButtonsUI();
+
+      // Run initial search/filter
+      applyFilters();
+    };
+
+    function setAppTheme(theme, save = true) {
+      document.documentElement.classList.remove('dark', 'theme-daintree', 'theme-wattle', 'theme-night');
+      if (theme === 'daintree') {
+        document.documentElement.classList.add('dark', 'theme-daintree');
+      } else if (theme === 'wattle') {
+        document.documentElement.classList.add('dark', 'theme-wattle');
+      } else if (theme === 'night') {
+        document.documentElement.classList.add('dark', 'theme-night');
+      } else {
+        // Eucalyptus default light/dark adaptive
+        document.documentElement.classList.add('dark');
+      }
+      if (save) localStorage.setItem('austree_theme', theme);
+      showToast(`Switched theme to ${theme.toUpperCase()}`);
+    }
+
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      localStorage.setItem('austree_view_mode', mode);
+      updateViewButtonsUI();
+      renderSpeciesGrid();
+    }
+
+    function updateViewButtonsUI() {
+      const btnPhoto = document.getElementById('btn-view-photo');
+      const btnPlate = document.getElementById('btn-view-plate');
+      
+      if (currentViewMode === 'photo') {
+        btnPhoto.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all bg-eucalyptus-600 text-white shadow-sm font-semibold";
+        btnPlate.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+      } else {
+        btnPlate.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all bg-eucalyptus-600 text-white shadow-sm font-semibold";
+        btnPhoto.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+      }
+    }
+
+    /* ==========================================================================
+       3. FILTER & TAXONOMIC KEY SEARCH ENGINE
+       ========================================================================== */
+
+    function populateDropdownFilters() {
+      // Family Select Options
+      const familySet = new Set(ALL_SPECIES.map(s => s.family));
+      const sortedFamilies = Array.from(familySet).sort();
+      const familySelect = document.getElementById('filter-family');
+      familySelect.innerHTML = `<option value="">All Families (${sortedFamilies.length})</option>`;
+      sortedFamilies.forEach(f => {
+        familySelect.innerHTML += `<option value="${f}">${f}</option>`;
+      });
+
+      // Genus Select Options
+      const genusSet = new Set(ALL_SPECIES.map(s => s.genus));
+      const sortedGenera = Array.from(genusSet).sort();
+      const genusSelect = document.getElementById('filter-genus');
+      genusSelect.innerHTML = `<option value="">All Genera (${sortedGenera.length})</option>`;
+      sortedGenera.forEach(g => {
+        genusSelect.innerHTML += `<option value="${g}">${g}</option>`;
+      });
+    }
+
+    function buildAZNavigation() {
+      const container = document.getElementById('az-buttons-container');
+      container.innerHTML = '';
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+      
+      letters.forEach(lettr => {
+        // Count matching species for badge
+        const count = ALL_SPECIES.filter(s => s.sci.toUpperCase().startsWith(lettr)).length;
+        if (count > 0) {
+          const btn = document.createElement('button');
+          btn.id = `letter-btn-${lettr}`;
+          btn.onclick = () => filterLetter(lettr);
+          btn.className = "az-btn px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition shrink-0 flex items-center gap-1 font-mono";
+          btn.innerHTML = `${lettr}<span class="text-[9px] opacity-60">(${count})</span>`;
+          container.appendChild(btn);
+        }
+      });
+    }
+
+    function filterLetter(lettr) {
+      currentActiveLetter = lettr;
+      document.querySelectorAll('.az-btn').forEach(b => {
+        b.classList.remove('bg-eucalyptus-600', 'text-white', 'font-semibold');
+        b.classList.add('text-slate-700', 'dark:text-slate-300');
+      });
+
+      const activeBtn = document.getElementById(lettr ? `letter-btn-${lettr}` : 'letter-btn-ALL');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-eucalyptus-600', 'text-white', 'font-semibold');
+      }
+      applyFilters();
+    }
+
+    function handleSearchInput() {
+      const input = document.getElementById('search-input').value;
+      document.getElementById('clear-search-btn').classList.toggle('hidden', input.length === 0);
+      applyFilters();
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      applyFilters();
+    }
+
+    function resetTaxonomicKey() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('filter-family').value = '';
+      document.getElementById('filter-genus').value = '';
+      document.getElementById('filter-bark').value = '';
+      document.getElementById('filter-foliage').value = '';
+      document.getElementById('filter-state').value = '';
+      document.getElementById('filter-biome').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      filterLetter('');
+      showToast('Taxonomic key filters reset to default');
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      const famVal = document.getElementById('filter-family').value;
+      const genVal = document.getElementById('filter-genus').value;
+      const barkVal = document.getElementById('filter-bark').value;
+      const folVal = document.getElementById('filter-foliage').value;
+      const stateVal = document.getElementById('filter-state').value;
+      const biomeVal = document.getElementById('filter-biome').value;
+
+      FILTERED_SPECIES = ALL_SPECIES.filter(s => {
+        // Search query match
+        if (query) {
+          const matchSci = s.sci.toLowerCase().includes(query);
+          const matchCommon = s.common.toLowerCase().includes(query);
+          const matchFam = s.family.toLowerCase().includes(query);
+          const matchNotes = s.notes.toLowerCase().includes(query);
+          if (!matchSci && !matchCommon && !matchFam && !matchNotes) return false;
+        }
+
+        // Family
+        if (famVal && s.family !== famVal) return false;
+
+        // Genus
+        if (genVal && s.genus !== genVal) return false;
+
+        // Bark
+        if (barkVal && s.bark !== barkVal) return false;
+
+        // Foliage
+        if (folVal && s.foliage !== folVal) return false;
+
+        // State
+        if (stateVal && !s.states.includes(stateVal)) return false;
+
+        // Biome
+        if (biomeVal && s.biome !== biomeVal) return false;
+
+        // A-Z Quick jump
+        if (currentActiveLetter && !s.sci.toUpperCase().startsWith(currentActiveLetter)) return false;
+
+        return true;
+      });
+
+      currentPage = 1;
+      updateUIHeaderStats();
+      renderSpeciesGrid();
+    }
+
+    function updateUIHeaderStats() {
+      document.getElementById('species-count-badge').textContent = FILTERED_SPECIES.length;
+      document.getElementById('total-count-badge').textContent = ALL_SPECIES.length;
+
+      const summaryParts = [];
+      const famVal = document.getElementById('filter-family').value;
+      const stateVal = document.getElementById('filter-state').value;
+      if (famVal) summaryParts.push(`Family: ${famVal}`);
+      if (stateVal) summaryParts.push(`Region: ${stateVal}`);
+      if (currentActiveLetter) summaryParts.push(`Letter: '${currentActiveLetter}'`);
+
+      document.getElementById('active-filter-summary').textContent = summaryParts.length > 0 
+        ? `Active Filter: ${summaryParts.join(' | ')}`
+        : `Displaying all taxonomic species records (${FILTERED_SPECIES.length})`;
+    }
+
+    /* ==========================================================================
+       4. BOTANICAL SVG PLATE GENERATOR ENGINE
+       ========================================================================== */
+
+    function renderBotanicalPlateSVG(species) {
+      const fam = species.family;
+      const gen = species.genus;
+
+      // Custom Color Themes based on Bark / Foliage
+      let strokeColor = "#34d399";
+      let leafColor = "#22c55e";
+      let flowerColor = "#facc15";
+
+      if (fam === "Myrtaceae") {
+        leafColor = "#466c36";
+        flowerColor = (gen === "Corymbia" || species.sci.includes("sideroxylon")) ? "#ef4444" : "#fef08a";
+      } else if (fam === "Fabaceae") {
+        leafColor = "#65a30d";
+        flowerColor = "#facc15";
+      } else if (fam === "Proteaceae") {
+        leafColor = "#15803d";
+        flowerColor = "#f97316";
+      } else if (fam === "Araucariaceae" || fam === "Cupressaceae") {
+        leafColor = "#166534";
+      } else if (fam === "Arecaceae") {
+        leafColor = "#10b981";
+      }
+
+      // Generate SVG geometry according to morphological traits
+      let diagramPath = '';
+      
+      if (fam === "Myrtaceae") {
+        // Gumnut woody capsule + operculum stamen tuft diagram
+        diagramPath = `
+          <!-- Operculum/Gumnut Capsule -->
+          <path d="M70,120 Q100,70 130,120 Q100,160 70,120 Z" fill="none" stroke="${strokeColor}" stroke-width="2.5" />
+          <line x1="100" y1="70" x2="100" y2="40" stroke="${strokeColor}" stroke-width="2" />
+          <!-- Stamens Tuft -->
+          <path d="M80,75 C70,45 60,50 65,30 M90,72 C85,40 90,30 92,20 M100,70 C100,35 105,25 108,15 M110,72 C115,40 120,30 122,25 M120,75 C130,45 140,50 135,30" fill="none" stroke="${flowerColor}" stroke-width="2" stroke-linecap="round" />
+          <!-- Sickle Leaf Overlay -->
+          <path d="M40,140 Q80,180 160,150 Q90,130 40,140 Z" fill="${leafColor}" fill-opacity="0.3" stroke="${strokeColor}" stroke-width="2"/>
+        `;
+      } else if (fam === "Fabaceae" && species.foliage.includes("Phyllodes")) {
+        // Acacia Phyllode + Globose Golden Flower Heads
+        diagramPath = `
+          <!-- Phyllode Stem -->
+          <path d="M50,160 Q100,130 140,50 Q80,90 50,160 Z" fill="${leafColor}" fill-opacity="0.35" stroke="${strokeColor}" stroke-width="2" />
+          <line x1="50" y1="160" x2="30" y2="180" stroke="${strokeColor}" stroke-width="2.5" />
+          <!-- Globular Golden Heads -->
+          <circle cx="130" cy="70" r="14" fill="${flowerColor}" fill-opacity="0.7" stroke="${flowerColor}" stroke-width="2" stroke-dasharray="2,2"/>
+          <circle cx="110" cy="110" r="12" fill="${flowerColor}" fill-opacity="0.7" stroke="${flowerColor}" stroke-width="2" stroke-dasharray="2,2"/>
+          <circle cx="80" cy="140" r="10" fill="${flowerColor}" fill-opacity="0.7" stroke="${flowerColor}" stroke-width="2"/>
+        `;
+      } else if (fam === "Proteaceae") {
+        // Banksia Cone or Grevillea Spider Flower
+        diagramPath = `
+          <!-- Cylindrical Woody Cone -->
+          <rect x="75" y="40" width="50" height="110" rx="20" fill="none" stroke="${strokeColor}" stroke-width="2.5" />
+          <!-- Follicle Valves -->
+          <ellipse cx="100" cy="65" rx="15" ry="6" fill="${flowerColor}" fill-opacity="0.5" stroke="${strokeColor}" stroke-width="1.5" />
+          <ellipse cx="100" cy="95" rx="18" ry="7" fill="${flowerColor}" fill-opacity="0.5" stroke="${strokeColor}" stroke-width="1.5" />
+          <ellipse cx="100" cy="125" rx="14" ry="6" fill="${flowerColor}" fill-opacity="0.5" stroke="${strokeColor}" stroke-width="1.5" />
+          <!-- Serrated Leaf margins -->
+          <path d="M40,160 L45,145 L38,135 L48,120 L40,110 L50,95 L45,80" fill="none" stroke="${strokeColor}" stroke-width="2"/>
+        `;
+      } else if (fam === "Casuarinaceae") {
+        // Jointed Branchlets
+        diagramPath = `
+          <line x1="100" y1="20" x2="100" y2="180" stroke="${leafColor}" stroke-width="3" />
+          <!-- Nodes / Whorls -->
+          <circle cx="100" cy="50" r="5" fill="none" stroke="${strokeColor}" stroke-width="2" />
+          <circle cx="100" cy="90" r="5" fill="none" stroke="${strokeColor}" stroke-width="2" />
+          <circle cx="100" cy="130" r="5" fill="none" stroke="${strokeColor}" stroke-width="2" />
+          <path d="M100,50 L130,30 M100,90 L60,70 M100,130 L140,110" stroke="${leafColor}" stroke-width="2" />
+        `;
+      } else {
+        // Broad Rainforest Leaf / Standard Specimen Plate
+        diagramPath = `
+          <path d="M100,20 Q160,100 100,180 Q40,100 100,20 Z" fill="${leafColor}" fill-opacity="0.25" stroke="${strokeColor}" stroke-width="2.5" />
+          <line x1="100" y1="20" x2="100" y2="180" stroke="${strokeColor}" stroke-width="2" />
+          <!-- Lateral Veins -->
+          <path d="M100,60 Q130,50 140,40 M100,60 Q70,50 60,40 M100,100 Q140,90 150,80 M100,100 Q60,90 50,80 M100,140 Q130,130 140,120 M100,140 Q70,130 60,120" fill="none" stroke="${strokeColor}" stroke-width="1.5" />
+        `;
+      }
+
+      return `
+        <svg viewBox="0 0 200 200" class="w-full h-full p-2">
+          <!-- Grid Specimen Background -->
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-opacity="0.05" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          
+          <!-- Diagram Morphological Artwork -->
+          <g class="transition-transform duration-500 hover:scale-105">
+            ${diagramPath}
+          </g>
+
+          <!-- Taxonomic Plate Metadata Watermark -->
+          <text x="10" y="190" font-family="monospace" font-size="9" fill="currentColor" opacity="0.5">FIG. ${fam.toUpperCase()} — TAXON KEY</text>
+        </svg>
+      `;
+    }
+
+    /* ==========================================================================
+       5. FIELD PHOTO REST API & WIKIMEDIA / INATURALIST INTEGRATION
+       ========================================================================== */
+
+    async function fetchTaxonPhoto(sciName, imgElementId, badgeElementId) {
+      // 1. Bundled offline photo (exact species match, licensed)
+      const record = ALL_SPECIES.find(s => s.sci === sciName);
+      const bundled = record && getBundledPhoto(record);
+      if (bundled) {
+        const attr = `${bundled.attr} · ${bundled.license} · via ${bundled.via}`;
+        updatePhotoDOM(imgElementId, badgeElementId, bundled.file, bundled.via === 'iNaturalist' ? 'iNaturalist' : 'ALA', sciName, attr, bundled.large);
+        return;
+      }
+
+      // Only user-added specimens are looked up online; other records
+      // without a bundled photo show the botanical plate instead.
+      if (record && record.custom) {
+        if (cachedPhotoUrls[sciName]) {
+          const cached = cachedPhotoUrls[sciName];
+          updatePhotoDOM(imgElementId, badgeElementId, cached.url, cached.provider, sciName, cached.attr);
+          return;
+        }
+      } else {
+        showPlateFallback(imgElementId, sciName);
+        return;
+      }
+
+      try {
+        // 1. Try iNaturalist Taxon API
+        const inatUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(sciName)}&per_page=1`;
+        const resInat = await fetch(inatUrl);
+        if (resInat.ok) {
+          const dataInat = await resInat.json();
+          const exact = (dataInat.results || []).find(t => t.name.toLowerCase() === sciName.toLowerCase());
+          if (exact && exact.default_photo) {
+            const photoObj = exact.default_photo;
+            const photoUrl = photoObj.medium_url || photoObj.square_url;
+            const attr = photoObj.attribution || 'iNaturalist Research Grade';
+            
+            cachedPhotoUrls[sciName] = { url: photoUrl, provider: 'iNaturalist', attr };
+            savePhotoCache();
+            updatePhotoDOM(imgElementId, badgeElementId, photoUrl, 'iNaturalist', sciName, attr);
+            return;
+          }
+        }
+
+        // 2. Fallback to Wikimedia Commons API
+        const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(sciName.replace(/ /g, '_'))}`;
+        const resWiki = await fetch(wikiUrl);
+        if (resWiki.ok) {
+          const dataWiki = await resWiki.json();
+          if (dataWiki.thumbnail && dataWiki.thumbnail.source && (dataWiki.title || '').toLowerCase() === sciName.toLowerCase()) {
+            const photoUrl = dataWiki.thumbnail.source;
+            cachedPhotoUrls[sciName] = { url: photoUrl, provider: 'Wikimedia Commons', attr: 'CC-BY-SA Wikimedia' };
+            savePhotoCache();
+            updatePhotoDOM(imgElementId, badgeElementId, photoUrl, 'Wikimedia', sciName, 'CC-BY-SA Wikimedia');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn(`Photo fetch fallback for ${sciName}`);
+      }
+
+      // Final SVG Botanical fallback if no photo available online
+      showPlateFallback(imgElementId, sciName);
+    }
+
+    function showPlateFallback(imgElementId, sciName) {
+      const imgEl = document.getElementById(imgElementId);
+      if (imgEl) {
+        const box = imgEl.parentElement;
+        box.classList.add('bg-slate-900/90', 'plate-bg', 'text-emerald-400');
+        box.innerHTML = renderBotanicalPlateSVG(ALL_SPECIES.find(s => s.sci === sciName) || { family: 'Myrtaceae', genus: 'Eucalyptus', foliage: '' })
+          + `<div class="absolute top-2 right-2 bg-slate-950/80 text-slate-300 text-[9px] font-mono px-2 py-0.5 rounded">No photo</div>`;
+      }
+    }
+
+    function savePhotoCache() {
+      try {
+        localStorage.setItem('austree_photo_cache_v2', JSON.stringify(cachedPhotoUrls));
+      } catch(e){}
+    }
+
+    function updatePhotoDOM(imgId, badgeId, url, provider, sciName, attr, largeUrl) {
+      const imgEl = document.getElementById(imgId);
+      if (imgEl) {
+        imgEl.src = url;
+        imgEl.classList.remove('opacity-0');
+      }
+      const badgeEl = document.getElementById(badgeId);
+      if (badgeEl) {
+        badgeEl.textContent = provider;
+        badgeEl.classList.remove('hidden');
+      }
+    }
+
+    /* ==========================================================================
+       6. RENDER SPECIES GRID & CARD VIEW ENGINE
+       ========================================================================== */
+
+    function renderSpeciesGrid() {
+      const container = document.getElementById('species-grid');
+      const emptyState = document.getElementById('empty-state');
+      container.innerHTML = '';
+
+      if (FILTERED_SPECIES.length === 0) {
+        emptyState.classList.remove('hidden');
+        document.getElementById('pagination-controls').classList.add('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+        document.getElementById('pagination-controls').classList.remove('hidden');
+      }
+
+      // Calculate Pagination
+      const totalPages = Math.ceil(FILTERED_SPECIES.length / pageSize) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, FILTERED_SPECIES.length);
+      const pageItems = FILTERED_SPECIES.slice(startIndex, endIndex);
+
+      // Render Cards
+      pageItems.forEach((sp, idx) => {
+        const cardId = `species-card-${startIndex + idx}`;
+        const imgId = `img-sp-${startIndex + idx}`;
+        const badgeId = `badge-sp-${startIndex + idx}`;
+
+        const card = document.createElement('div');
+        card.className = "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group";
+
+        // States Badges HTML
+        const chipCodes = [...sp.states, ...(sp.nativeOther || []).map(o => ISLAND_CODES[o] || o)];
+        const statesHTML = chipCodes.map(st => `
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700" title="${sp.rangeSource === 'native' ? 'Native range' : 'Has records here (native range not verified)'}">${st}</span>
+        `).join('');
+
+        // Visualizer Header (Photo or Plate)
+        let visualizerContent = '';
+        const hasPhoto = !!getBundledPhoto(sp) || sp.custom;
+        if (currentViewMode === 'photo' && !hasPhoto) {
+          // No real photo exists for this record: draw its plate immediately
+          visualizerContent = `
+            <div class="relative w-full h-48 bg-slate-900/90 plate-bg overflow-hidden flex items-center justify-center border-b border-slate-800 text-emerald-400">
+              ${renderBotanicalPlateSVG(sp)}
+              <div class="absolute top-2 right-2 bg-slate-950/80 text-slate-300 text-[9px] font-mono px-2 py-0.5 rounded">No photo</div>
+              ${sp.height !== NOT_RECORDED ? `<div class="absolute bottom-2 left-2 bg-slate-950/70 text-emerald-400 text-[10px] font-mono px-2 py-0.5 rounded">${sp.height}</div>` : ''}
+            </div>
+          `;
+        } else if (currentViewMode === 'photo') {
+          visualizerContent = `
+            <div class="relative w-full h-48 bg-slate-100 dark:bg-slate-950 overflow-hidden flex items-center justify-center group-hover:opacity-95 transition">
+              <img id="${imgId}" src="" alt="${sp.sci}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-0" />
+              <div id="${badgeId}" class="hidden absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] font-mono px-2 py-0.5 rounded-full border border-white/10"></div>
+              ${sp.height !== NOT_RECORDED ? `<div class="absolute bottom-2 left-2 bg-slate-950/70 text-emerald-400 backdrop-blur-sm text-[10px] font-mono px-2 py-0.5 rounded">${sp.height}</div>` : ''}
+            </div>
+          `;
+          // Trigger async photo fetch
+          setTimeout(() => fetchTaxonPhoto(sp.sci, imgId, badgeId), 10);
+        } else {
+          // Botanical SVG Plate Mode
+          visualizerContent = `
+            <div class="relative w-full h-48 bg-slate-900/90 plate-bg overflow-hidden flex items-center justify-center border-b border-slate-800 text-emerald-400">
+              ${renderBotanicalPlateSVG(sp)}
+              <div class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-sm text-wattle-400 text-[9px] font-mono px-2 py-0.5 rounded border border-wattle-500/20">
+                ${sp.family}
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          ${visualizerContent}
+          <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between text-xs text-slate-400 font-mono mb-1">
+                <span>${sp.genus}</span>
+                <span class="text-eucalyptus-600 dark:text-eucalyptus-400 font-semibold">${sp.family}</span>
+              </div>
+              <h3 class="font-serif font-bold text-base text-slate-900 dark:text-slate-100 italic leading-snug group-hover:text-eucalyptus-600 dark:group-hover:text-eucalyptus-400 transition">
+                ${sp.sci}
+              </h3>
+              <p class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-0.5">${sp.common}</p>
+              ${sp.occ ? `<p class="text-[10px] font-mono text-slate-400 mt-0.5">${sp.occ.toLocaleString()} ALA records</p>` : ''}
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+              <div class="flex flex-wrap gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">🪵 ${sp.bark}</span>
+                <span class="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">🍃 ${sp.foliage}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                ${sp.notes}
+              </p>
+            </div>
+
+            <!-- Footer Toolbar -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                ${statesHTML}
+              </div>
+              <div class="flex items-center space-x-1">
+                <!-- Download Specimen Text File -->
+                <button onclick="downloadSpecimenSheet('${encodeURIComponent(sp.sci)}')" class="p-1.5 rounded-lg text-slate-400 hover:text-eucalyptus-600 dark:hover:text-eucalyptus-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Download Specimen Sheet (.txt)">
+                  <i class="fa-solid fa-file-lines text-xs"></i>
+                </button>
+                <!-- ALA External Link -->
+                <a href="https://bie.ala.org.au/species/${encodeURIComponent(sp.guid || sp.sci)}" target="_blank" rel="noopener" class="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="View on Atlas of Living Australia (ALA)">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        card.classList.add('cursor-pointer');
+        card.title = 'Click for map, photos and details';
+        card.onclick = (e) => { if (!e.target.closest('button, a')) openSpeciesDetail(sp.sci); };
+        container.appendChild(card);
+      });
+
+      // Update Pagination Indicator Controls
+      document.getElementById('page-indicator').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('prev-page-btn').disabled = (currentPage === 1);
+      document.getElementById('next-page-btn').disabled = (currentPage >= totalPages);
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
+      renderSpeciesGrid();
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('page-size-select').value);
+      currentPage = 1;
+      renderSpeciesGrid();
+    }
+
+    /* ==========================================================================
+       7. LIGHTBOX PHOTO ZOOM & SPECIMEN DOWNLOAD EXPORTERS
+       ========================================================================== */
+
+    function openLightbox(imgUrl, sciName, provider, attr, fallbackUrl) {
+      const lb = document.getElementById('lightbox-img');
+      // The larger ALA image needs internet; fall back to the bundled thumbnail offline.
+      lb.onerror = () => { lb.onerror = null; if (fallbackUrl) lb.src = fallbackUrl; };
+      lb.src = imgUrl;
+      document.getElementById('lightbox-title').textContent = sciName;
+      document.getElementById('lightbox-subtitle').textContent = provider ? `Source: ${provider}` : '';
+      document.getElementById('lightbox-attr').textContent = attr || '';
+      document.getElementById('lightbox-modal').classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').classList.add('hidden');
+    }
+
+    // Direct Browser Download: Specimen Sheet .txt file
+    function downloadSpecimenSheet(encodedSci) {
+      const sci = decodeURIComponent(encodedSci);
+      const sp = ALL_SPECIES.find(s => s.sci === sci);
+      if (!sp) return;
+
+      const content = `
+================================================================================
+           HERBARIUM SPECIMEN SHEET — AUSTREE ATLAS STANDALONE INDEX
+================================================================================
+
+TAXONOMIC CLASSIFICATION:
+  Scientific Name: ${sp.sci}
+  Common Name:     ${sp.common}
+  Family:          ${sp.family}
+  Genus:           ${sp.genus}
+
+MORPHOLOGICAL & ECOLOGICAL TRAITS:
+  Typical Height:  ${sp.height}
+  Bark Habit:      ${sp.bark}
+  Foliage Type:    ${sp.foliage}
+  Biome / Habitat: ${sp.biome}
+  Geographic Dist: ${sp.states.join(', ')} (Australia)
+
+DIAGNOSTIC BOTANICAL NOTES:
+  ${sp.notes}
+
+SPECIMEN METADATA:
+  Database ID:     AUS-TAXON-${sp.sci.replace(/\s+/g, '-').toUpperCase()}
+  Atlas Reference: https://bie.ala.org.au/species/${encodeURIComponent(sp.sci)}
+  Export Date:     ${new Date().toISOString().split('T')[0]}
+
+================================================================================
+Generated via AusTree Atlas — Independent Desktop Botanical Software
+================================================================================
+      `.trim();
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const filename = `${sp.sci.replace(/\s+/g, '_')}_Specimen_Sheet.txt`;
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast(`Downloaded specimen sheet: ${filename}`);
+    }
+
+    // Direct Browser Download: Filtered Species CSV Export
+    function exportFilteredCSV() {
+      if (FILTERED_SPECIES.length === 0) {
+        showToast('No species records available to export.');
+        return;
+      }
+
+      const headers = ["Scientific Name", "Common Name", "Family", "Genus", "States", "Bark Type", "Foliage Type", "Biome", "Height", "Notes"];
+      const rows = FILTERED_SPECIES.map(s => [
+        `"${s.sci}"`,
+        `"${s.common}"`,
+        `"${s.family}"`,
+        `"${s.genus}"`,
+        `"${s.states.join(';')}"`,
+        `"${s.bark}"`,
+        `"${s.foliage}"`,
+        `"${s.biome}"`,
+        `"${s.height}"`,
+        `"${s.notes.replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+      const filename = `austree_atlas_export_${new Date().toISOString().split('T')[0]}.csv`;
+
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast(`Exported ${FILTERED_SPECIES.length} species records to CSV`);
+    }
+
+    /* ==========================================================================
+       8. CUSTOM SPECIMEN HERBARIUM DRAWER & MODAL MANAGEMENT
+       ========================================================================== */
+
+    function openAddSpecimenModal() {
+      document.getElementById('add-specimen-modal').classList.remove('hidden');
+    }
+
+    function closeAddSpecimenModal() {
+      document.getElementById('add-specimen-modal').classList.add('hidden');
+    }
+
+    function saveCustomSpecimen(event) {
+      event.preventDefault();
+      
+      const sci = document.getElementById('input-sci-name').value.trim();
+      const common = document.getElementById('input-common-name').value.trim();
+      const family = document.getElementById('input-family').value.trim();
+      const bark = document.getElementById('input-bark').value;
+      const foliage = document.getElementById('input-foliage').value;
+      const statesRaw = document.getElementById('input-states').value.trim();
+      const height = document.getElementById('input-height').value.trim() || '10-20m';
+      const notes = document.getElementById('input-notes').value.trim() || 'Field herbarium observation record.';
+
+      const genus = sci.split(' ')[0] || 'Unknown';
+      const states = statesRaw ? statesRaw.split(',').map(s => s.trim().toUpperCase()) : ['NSW'];
+
+      const newSpecimen = {
+        sci,
+        common,
+        family,
+        genus,
+        states,
+        bark,
+        foliage,
+        biome: 'Dry Sclerophyll',
+        height,
+        notes,
+        custom: true
+      };
+
+      // Unshift to Master state
+      ALL_SPECIES.unshift(newSpecimen);
+
+      // Save to localStorage
+      try {
+        const stored = localStorage.getItem('austree_custom_records');
+        const customArr = stored ? JSON.parse(stored) : [];
+        customArr.unshift(newSpecimen);
+        localStorage.setItem('austree_custom_records', JSON.stringify(customArr));
+      } catch(e){}
+
+      closeAddSpecimenModal();
+      document.getElementById('specimen-form').reset();
+      populateDropdownFilters();
+      applyFilters();
+      showToast(`Added custom specimen: ${sci}`);
+    }
+
+    /* ==========================================================================
+       9. TOAST NOTIFICATION SYSTEM
+       ========================================================================== */
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = "pointer-events-auto bg-slate-900/90 text-white dark:bg-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-lg border border-white/10 dark:border-slate-800 text-xs font-medium flex items-center gap-2 transition-all duration-300 transform translate-y-2 opacity-0";
+      toast.innerHTML = `<i class="fa-solid fa-circle-check text-eucalyptus-400 dark:text-eucalyptus-600"></i> <span>${message}</span>`;
+      
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+  <!-- SPECIES DETAIL VIEW (map, gallery, bark photos, description) -->
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Python environment (recreate with: python -m venv .venv && .venv\Scripts\pip install -r requirements.txt)
+.venv/
+__pycache__/
+*.pyc
+
+# Build output — publish the .exe as a GitHub Release instead
+build/
+dist/
+*.spec
+
+# Download caches and scratch data (re-created by the tools/ scripts)
+tools/cache/
+tools/apc/
+
+# Editor / OS clutter
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
