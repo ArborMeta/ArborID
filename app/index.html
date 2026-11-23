@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -78,24 +78,6 @@
       background: radial-gradient(circle at 50% -20%, rgba(120, 180, 110, 0.15), transparent 70%);
     }
 
-    .theme-daintree {
-      --bg-main: #06140d;
-      --card-bg: rgba(15, 35, 25, 0.85);
-      --accent-color: #34d399;
-    }
-
-    .theme-wattle {
-      --bg-main: #181307;
-      --card-bg: rgba(38, 30, 15, 0.85);
-      --accent-color: #facc15;
-    }
-
-    .theme-night {
-      --bg-main: #090d16;
-      --card-bg: rgba(20, 27, 45, 0.85);
-      --accent-color: #38bdf8;
-    }
-
     /* SVG Plate Stylings */
     .plate-bg {
       background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.15) 100%);
@@ -129,7 +111,7 @@
         <div>
           <h1 class="font-serif text-lg font-bold tracking-wide text-eucalyptus-900 dark:text-eucalyptus-100 flex items-center gap-2">
             AusTree Atlas
-            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v3.5 Standalone</span>
+            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.0</span>
           </h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Australian Botanical Index & Taxonomic Key</p>
         </div>
@@ -160,28 +142,6 @@
         <button onclick="exportFilteredCSV()" class="p-2 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition" title="Export Current Filtered List as CSV">
           <i class="fa-solid fa-file-csv text-base text-eucalyptus-600 dark:text-eucalyptus-400"></i>
         </button>
-
-        <!-- Theme Selector Menu -->
-        <div class="relative group">
-          <button class="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1" title="Visual Palette Theme">
-            <i class="fa-solid fa-palette"></i>
-          </button>
-          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block z-50">
-            <div class="px-3 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">Theme Preset</div>
-            <button onclick="setAppTheme('eucalyptus')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
-              <span>🌿 Eucalyptus Mist</span>
-            </button>
-            <button onclick="setAppTheme('daintree')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
-              <span>🌴 Daintree Biolume</span>
-            </button>
-            <button onclick="setAppTheme('wattle')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
-              <span>🌼 Wattle Sunset</span>
-            </button>
-            <button onclick="setAppTheme('night')" class="w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between">
-              <span>🌌 Night Canopy</span>
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>
@@ -641,9 +601,6 @@
       const savedView = localStorage.getItem('austree_view_mode');
       if (savedView) currentViewMode = savedView;
 
-      const savedTheme = localStorage.getItem('austree_theme') || 'eucalyptus';
-      setAppTheme(savedTheme, false);
-
       // Load cached photo URLs
       const storedPhotos = localStorage.getItem('austree_photo_cache_v2');
       if (storedPhotos) {
@@ -673,22 +630,6 @@
       // Run initial search/filter
       applyFilters();
     };
-
-    function setAppTheme(theme, save = true) {
-      document.documentElement.classList.remove('dark', 'theme-daintree', 'theme-wattle', 'theme-night');
-      if (theme === 'daintree') {
-        document.documentElement.classList.add('dark', 'theme-daintree');
-      } else if (theme === 'wattle') {
-        document.documentElement.classList.add('dark', 'theme-wattle');
-      } else if (theme === 'night') {
-        document.documentElement.classList.add('dark', 'theme-night');
-      } else {
-        // Eucalyptus default light/dark adaptive
-        document.documentElement.classList.add('dark');
-      }
-      if (save) localStorage.setItem('austree_theme', theme);
-      showToast(`Switched theme to ${theme.toUpperCase()}`);
-    }
 
     function setViewMode(mode) {
       currentViewMode = mode;
