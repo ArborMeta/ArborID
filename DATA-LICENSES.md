@@ -22,6 +22,7 @@ Photos are credited in the app wherever they're enlarged.
 The species page fetches these while it's open. They aren't stored in this repository.
 
 - ALA occurrence maps, records and photo gallery: each photo is credited with its licence in the app.
+- Plant-part photo sections (Flowers, Fruit & seeds, Leaves, Bark, Whole tree): `app/data/photo_categories.js` stores only ALA image IDs, photographer names and licences (CC or public domain only). The photos themselves load from images.ala.org.au and stay under their photographers' licences. The sorting was done with OpenCLIP ViT-H-14-378 using Apple's DFN-5B weights; the model is not included in this repository.
 - Wikipedia summaries: CC BY-SA 4.0, linked to the source article.
 - Wikimedia Commons bark photos: each credited with its author and licence.
 - Esri World Topographic Map tiles: © Esri and contributors.

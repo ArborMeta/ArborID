@@ -1,0 +1,8 @@
+# Photo sorting (plant-part sections). Install in its own venv, separate from the app's.
+# For an NVIDIA GPU, install PyTorch with CUDA first, e.g.:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+# (CPU-only also works, just much slower.)
+torch
+torchvision
+open_clip_torch
+pillow

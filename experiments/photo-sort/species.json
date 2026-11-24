@@ -1,0 +1,402 @@
+[
+ {
+  "sci": "Acacia longifolia",
+  "common": "Sallow Wattle",
+  "family": "Fabaceae",
+  "genus": "Acacia",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51286955",
+  "photos_on_ala": 9131
+ },
+ {
+  "sci": "Exocarpos cupressiformis",
+  "common": "Native Cherry",
+  "family": "Santalaceae",
+  "genus": "Exocarpos",
+  "guid": "https://id.biodiversity.org.au/node/apni/2914099",
+  "photos_on_ala": 9050
+ },
+ {
+  "sci": "Acacia melanoxylon",
+  "common": "Blackwood",
+  "family": "Fabaceae",
+  "genus": "Acacia",
+  "guid": "https://id.biodiversity.org.au/node/apni/2903496",
+  "photos_on_ala": 8920
+ },
+ {
+  "sci": "Pittosporum undulatum",
+  "common": "Sweet Pittosporum",
+  "family": "Pittosporaceae",
+  "genus": "Pittosporum",
+  "guid": "https://id.biodiversity.org.au/node/apni/2904297",
+  "photos_on_ala": 8025
+ },
+ {
+  "sci": "Acacia pycnantha",
+  "common": "Golden Wattle",
+  "family": "Fabaceae",
+  "genus": "Acacia",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51436646",
+  "photos_on_ala": 7935
+ },
+ {
+  "sci": "Banksia marginata",
+  "common": "Silver Banksia",
+  "family": "Proteaceae",
+  "genus": "Banksia",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51445257",
+  "photos_on_ala": 7629
+ },
+ {
+  "sci": "Banksia integrifolia",
+  "common": "Coast Banksia",
+  "family": "Proteaceae",
+  "genus": "Banksia",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51732899",
+  "photos_on_ala": 7327
+ },
+ {
+  "sci": "Senna artemisioides",
+  "common": "Desert Cassia",
+  "family": "Fabaceae",
+  "genus": "Senna",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51285233",
+  "photos_on_ala": 6158
+ },
+ {
+  "sci": "Allocasuarina littoralis",
+  "common": "Black Sheoak",
+  "family": "Casuarinaceae",
+  "genus": "Allocasuarina",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51433033",
+  "photos_on_ala": 5733
+ },
+ {
+  "sci": "Banksia spinulosa",
+  "common": "Hairpin Banksia",
+  "family": "Proteaceae",
+  "genus": "Banksia",
+  "guid": "https://id.biodiversity.org.au/node/apni/7931274",
+  "photos_on_ala": 5279
+ },
+ {
+  "sci": "Pittosporum revolutum",
+  "common": "Yellow Pittosporum",
+  "family": "Pittosporaceae",
+  "genus": "Pittosporum",
+  "guid": "https://id.biodiversity.org.au/node/apni/2907274",
+  "photos_on_ala": 4868
+ },
+ {
+  "sci": "Eucalyptus tereticornis",
+  "common": "Forest Red Gum",
+  "family": "Myrtaceae",
+  "genus": "Eucalyptus",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51440747",
+  "photos_on_ala": 4773
+ },
+ {
+  "sci": "Elaeocarpus reticulatus",
+  "common": "Blueberry Ash",
+  "family": "Elaeocarpaceae",
+  "genus": "Elaeocarpus",
+  "guid": "https://id.biodiversity.org.au/node/apni/2915642",
+  "photos_on_ala": 4423
+ },
+ {
+  "sci": "Allocasuarina verticillata",
+  "common": "Drooping Sheoak",
+  "family": "Casuarinaceae",
+  "genus": "Allocasuarina",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51270386",
+  "photos_on_ala": 4025
+ },
+ {
+  "sci": "Leptospermum continentale",
+  "common": "Prickly Tea-tree",
+  "family": "Myrtaceae",
+  "genus": "Leptospermum",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51782372",
+  "photos_on_ala": 4008
+ },
+ {
+  "sci": "Eucalyptus viminalis",
+  "common": "Ribbon Gum",
+  "family": "Myrtaceae",
+  "genus": "Eucalyptus",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51290421",
+  "photos_on_ala": 3952
+ },
+ {
+  "sci": "Polyscias sambucifolia",
+  "common": "Elderberry Panax",
+  "family": "Araliaceae",
+  "genus": "Polyscias",
+  "guid": "https://id.biodiversity.org.au/node/apni/2897021",
+  "photos_on_ala": 3846
+ },
+ {
+  "sci": "Leptospermum polygalifolium",
+  "common": "Tantoon",
+  "family": "Myrtaceae",
+  "genus": "Leptospermum",
+  "guid": "https://id.biodiversity.org.au/node/apni/2909048",
+  "photos_on_ala": 3769
+ },
+ {
+  "sci": "Cupaniopsis anacardioides",
+  "common": "Tuckeroo",
+  "family": "Sapindaceae",
+  "genus": "Cupaniopsis",
+  "guid": "https://id.biodiversity.org.au/node/apni/2890288",
+  "photos_on_ala": 3479
+ },
+ {
+  "sci": "Ficus coronata",
+  "common": "Creek Sandpaper Fig",
+  "family": "Moraceae",
+  "genus": "Ficus",
+  "guid": "https://id.biodiversity.org.au/node/apni/2915815",
+  "photos_on_ala": 3337
+ },
+ {
+  "sci": "Prostanthera lasianthos",
+  "common": "Victorian Christmas Bush",
+  "family": "Lamiaceae",
+  "genus": "Prostanthera",
+  "guid": "https://id.biodiversity.org.au/node/apni/2914040",
+  "photos_on_ala": 3308
+ },
+ {
+  "sci": "Melaleuca quinquenervia",
+  "common": "Swamp Paperbark",
+  "family": "Myrtaceae",
+  "genus": "Melaleuca",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51782419",
+  "photos_on_ala": 3267
+ },
+ {
+  "sci": "Melaleuca lanceolata",
+  "common": "Dryland Tea-tree",
+  "family": "Myrtaceae",
+  "genus": "Melaleuca",
+  "guid": "https://id.biodiversity.org.au/node/apni/2891374",
+  "photos_on_ala": 3253
+ },
+ {
+  "sci": "Jagera pseudorhus",
+  "common": "Foambark Tree",
+  "family": "Sapindaceae",
+  "genus": "Jagera",
+  "guid": "https://id.biodiversity.org.au/node/apni/2898775",
+  "photos_on_ala": 3233
+ },
+ {
+  "sci": "Lophostemon confertus",
+  "common": "Brush Box",
+  "family": "Myrtaceae",
+  "genus": "Lophostemon",
+  "guid": "https://id.biodiversity.org.au/node/apni/2908951",
+  "photos_on_ala": 3214
+ },
+ {
+  "sci": "Hakea decurrens",
+  "common": "Bushy Needlewood",
+  "family": "Proteaceae",
+  "genus": "Hakea",
+  "guid": "https://id.biodiversity.org.au/node/apni/2910740",
+  "photos_on_ala": 3120
+ },
+ {
+  "sci": "Eucalyptus obliqua",
+  "common": "Messmate Stringybark",
+  "family": "Myrtaceae",
+  "genus": "Eucalyptus",
+  "guid": "https://id.biodiversity.org.au/node/apni/5308808",
+  "photos_on_ala": 3023
+ },
+ {
+  "sci": "Pittosporum angustifolium",
+  "common": "Native Willow",
+  "family": "Pittosporaceae",
+  "genus": "Pittosporum",
+  "guid": "https://id.biodiversity.org.au/node/apni/7744138",
+  "photos_on_ala": 2994
+ },
+ {
+  "sci": "Syzygium smithii",
+  "common": "Lilly Pilly",
+  "family": "Myrtaceae",
+  "genus": "Syzygium",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51782596",
+  "photos_on_ala": 2988
+ },
+ {
+  "sci": "Pomaderris aspera",
+  "common": "Hazel Pomaderris",
+  "family": "Rhamnaceae",
+  "genus": "Pomaderris",
+  "guid": "https://id.biodiversity.org.au/node/apni/2894213",
+  "photos_on_ala": 2922
+ },
+ {
+  "sci": "Grevillea sericea",
+  "common": "Pink Spider Flower",
+  "family": "Proteaceae",
+  "genus": "Grevillea",
+  "guid": "https://id.biodiversity.org.au/node/apni/2906135",
+  "photos_on_ala": 2804
+ },
+ {
+  "sci": "Lomatia silaifolia",
+  "common": "Crinkle Bush",
+  "family": "Proteaceae",
+  "genus": "Lomatia",
+  "guid": "https://id.biodiversity.org.au/node/apni/2897191",
+  "photos_on_ala": 2786
+ },
+ {
+  "sci": "Persoonia linearis",
+  "common": "Narrow-leaved Geebung",
+  "family": "Proteaceae",
+  "genus": "Persoonia",
+  "guid": "https://id.biodiversity.org.au/node/apni/2912712",
+  "photos_on_ala": 2771
+ },
+ {
+  "sci": "Synoum glandulosum",
+  "common": "Dogwood",
+  "family": "Meliaceae",
+  "genus": "Synoum",
+  "guid": "https://id.biodiversity.org.au/node/apni/2905966",
+  "photos_on_ala": 2748
+ },
+ {
+  "sci": "Telopea speciosissima",
+  "common": "Waratah",
+  "family": "Proteaceae",
+  "genus": "Telopea",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51293559",
+  "photos_on_ala": 2697
+ },
+ {
+  "sci": "Livistona australis",
+  "common": "Cabbage Tree Palm",
+  "family": "Arecaceae",
+  "genus": "Livistona",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51266874",
+  "photos_on_ala": 2688
+ },
+ {
+  "sci": "Xanthorrhoea minor",
+  "common": "",
+  "family": "Xanthorrhoeaceae",
+  "genus": "Xanthorrhoea",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51429794",
+  "photos_on_ala": 2655
+ },
+ {
+  "sci": "Melia azedarach",
+  "common": "White Cedar",
+  "family": "Meliaceae",
+  "genus": "Melia",
+  "guid": "https://id.biodiversity.org.au/node/apni/2894326",
+  "photos_on_ala": 2632
+ },
+ {
+  "sci": "Xanthorrhoea australis",
+  "common": "Austral Grass-tree",
+  "family": "Xanthorrhoeaceae",
+  "genus": "Xanthorrhoea",
+  "guid": "https://id.biodiversity.org.au/node/apni/2904657",
+  "photos_on_ala": 2580
+ },
+ {
+  "sci": "Xanthorrhoea semiplana",
+  "common": "",
+  "family": "Xanthorrhoeaceae",
+  "genus": "Xanthorrhoea",
+  "guid": "https://id.biodiversity.org.au/node/apni/2897431",
+  "photos_on_ala": 2568
+ },
+ {
+  "sci": "Melaleuca ericifolia",
+  "common": "Swamp Paperbark",
+  "family": "Myrtaceae",
+  "genus": "Melaleuca",
+  "guid": "https://id.biodiversity.org.au/node/apni/2891096",
+  "photos_on_ala": 2475
+ },
+ {
+  "sci": "Persoonia levis",
+  "common": "Broad-leaved Geebung",
+  "family": "Proteaceae",
+  "genus": "Persoonia",
+  "guid": "https://id.biodiversity.org.au/node/apni/2920199",
+  "photos_on_ala": 2459
+ },
+ {
+  "sci": "Brachychiton populneus",
+  "common": "Kurrajong",
+  "family": "Malvaceae",
+  "genus": "Brachychiton",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51777365",
+  "photos_on_ala": 2405
+ },
+ {
+  "sci": "Lophostemon suaveolens",
+  "common": "Swamp Box",
+  "family": "Myrtaceae",
+  "genus": "Lophostemon",
+  "guid": "https://id.biodiversity.org.au/node/apni/2889131",
+  "photos_on_ala": 2379
+ },
+ {
+  "sci": "Nothofagus cunninghamii",
+  "common": "Myrtle Beech",
+  "family": "Nothofagaceae",
+  "genus": "Nothofagus",
+  "guid": "https://id.biodiversity.org.au/node/apni/7725767",
+  "photos_on_ala": 2340
+ },
+ {
+  "sci": "Angophora costata",
+  "common": "Sydney Red Gum",
+  "family": "Myrtaceae",
+  "genus": "Angophora",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51439559",
+  "photos_on_ala": 2310
+ },
+ {
+  "sci": "Ficus rubiginosa",
+  "common": "Port Jackson Fig",
+  "family": "Moraceae",
+  "genus": "Ficus",
+  "guid": "https://id.biodiversity.org.au/node/apni/2894530",
+  "photos_on_ala": 2294
+ },
+ {
+  "sci": "Polyscias elegans",
+  "common": "Celery Wood",
+  "family": "Araliaceae",
+  "genus": "Polyscias",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51292783",
+  "photos_on_ala": 2285
+ },
+ {
+  "sci": "Cryptocarya triplinervis",
+  "common": "Three-veined Cryptocarya",
+  "family": "Lauraceae",
+  "genus": "Cryptocarya",
+  "guid": "https://id.biodiversity.org.au/taxon/apni/51776033",
+  "photos_on_ala": 2229
+ },
+ {
+  "sci": "Brachychiton acerifolius",
+  "common": "Illawarra Flame Tree",
+  "family": "Malvaceae",
+  "genus": "Brachychiton",
+  "guid": "https://id.biodiversity.org.au/node/apni/2916722",
+  "photos_on_ala": 2154
+ }
+]

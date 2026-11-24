@@ -105,6 +105,7 @@
     ensureModal();
     const token = ++openToken;
     const photo = getBundledPhoto(sp);
+    const parts = sortedPhotos(sp);   // ALA photos sorted by plant part, or null
     const nr = (v) => v && v !== NOT_RECORDED;
 
     document.getElementById('detail-header').innerHTML = `
@@ -153,8 +154,9 @@
               <div><div class="text-[11px] font-semibold text-slate-500 mb-2">Records by month <span class="font-normal">(often reflects flowering)</span></div><div id="detail-months">${loading()}</div></div>
             </div>
           </section>
-          ${section('detail-bark', 'fa-tree', 'Bark photos <span class="normal-case font-normal tracking-normal">— Wikimedia Commons</span>')}
-          ${section('detail-gallery', 'fa-images', 'Photo gallery <span class="normal-case font-normal tracking-normal">— native-range records, Atlas of Living Australia</span>')}
+          ${parts ? renderPartSections(sp, parts) : `
+            ${section('detail-bark', 'fa-tree', 'Bark photos <span class="normal-case font-normal tracking-normal">— Wikimedia Commons</span>')}
+            ${section('detail-gallery', 'fa-images', 'Photos <span class="normal-case font-normal tracking-normal">— native-range records, Atlas of Living Australia</span>')}`}
           ${section('detail-taxonomy', 'fa-sitemap', 'Classification &amp; other names')}
         </div>
       </div>`;
@@ -171,7 +173,7 @@
     loadWikipedia(sp, token);
     loadFacets(sp, token);
     loadBarkPhotos(sp, token);
-    loadGallery(sp, token);
+    if (!parts) loadGallery(sp, token);
   };
 
   window.closeSpeciesDetail = function () {
@@ -325,7 +327,58 @@
     }
   }
 
-  /* ---------- ALA photo gallery ---------- */
+  /* ---------- ALA photos sorted by plant part (one section each) ---------- */
+  const PART_SECTIONS = [
+    ['f', 'Flowers', 'fa-fan'], ['s', 'Fruit & seeds', 'fa-seedling'], ['l', 'Leaves', 'fa-leaf'],
+    ['b', 'Bark', 'fa-tree'], ['t', 'Whole tree', 'fa-mountain-sun']
+  ];
+  const SHOW_FIRST = 12;
+
+  function sortedPhotos(sp) {
+    const pc = window.PHOTO_CATS;
+    const rows = pc && pc.species && pc.species[sp.sci];
+    if (!rows || !rows.length) return null;
+    return rows.map(([id, cats, c, l]) => ({
+      cats,
+      thumb: `https://images.ala.org.au/image/${id}/thumbnail`,
+      large: `https://images.ala.org.au/image/${id}/large`,
+      title: '',
+      credit: `© ${pc.creators[c] || 'Unknown'} · ${pc.licenses[l] || ''} · via Atlas of Living Australia`
+    }));
+  }
+
+  window.showAllPhotos = function (btn) {
+    btn.closest('section').querySelectorAll('.extra-photo').forEach(el => { el.hidden = false; });
+    btn.remove();
+  };
+
+  function renderPartSections(sp, photos) {
+    const all = `https://bie.ala.org.au/species/${encodeURIComponent(sp.guid || sp.sci)}#gallery`;
+    return PART_SECTIONS.map(([code, label, icon]) => {
+      const items = photos.filter(p => p.cats.includes(code));
+      const more = items.length > SHOW_FIRST
+        ? `<button onclick="showAllPhotos(this)" class="mt-2 text-xs font-semibold text-eucalyptus-600 dark:text-eucalyptus-400 hover:underline">Show all ${items.length} photos</button>` : '';
+      const wikimedia = code === 'b' ? `
+          <div class="mt-4">
+            <div class="text-[11px] font-semibold text-slate-500 mb-2">More bark photos — Wikimedia Commons</div>
+            <div id="detail-bark">${loading()}</div>
+          </div>` : '';
+      return `
+        <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
+            <i class="fa-solid ${icon} text-eucalyptus-500"></i>${label}
+            <span class="ml-auto font-mono normal-case tracking-normal font-normal">${items.length} photo${items.length === 1 ? '' : 's'}</span>
+          </h3>
+          ${items.length ? thumbGrid(items, sp.sci, SHOW_FIRST) + more
+            : empty(`No ${label.toLowerCase()} photos found among this species' ALA photos.`)}
+          ${wikimedia}
+        </section>`;
+    }).join('') + `
+      <p class="text-[10px] text-slate-400 -mt-2 px-1">Photos from native-range ALA records, sorted automatically by an image-recognition model, so a few may be in the wrong section; a photo showing two parts can appear in both.
+        <a href="${all}" target="_blank" rel="noopener" class="text-eucalyptus-600 dark:text-eucalyptus-400 hover:underline whitespace-nowrap">See all photos on ALA <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></p>`;
+  }
+
+  // Live, unsorted gallery for species without sorted photos.
   async function loadGallery(sp, token) {
     try {
       const q = new URLSearchParams({ q: occQuery(sp), pageSize: '40', sort: 'eventDate', dir: 'desc' });
@@ -354,12 +407,12 @@
   }
 
   // Thumbnails; clicking one opens the shared lightbox with its credit.
-  function thumbGrid(items, sci) {
+  function thumbGrid(items, sci, limit = Infinity) {
     const id = 'g' + Math.random().toString(36).slice(2);
     window[id] = items;
     return `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
       ${items.map((it, i) => `
-        <button class="group relative aspect-square rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800"
+        <button ${i >= limit ? 'hidden' : ''} class="${i >= limit ? 'extra-photo ' : ''}group relative aspect-square rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800"
           onclick="openLightbox(window['${id}'][${i}].large, ${esc(JSON.stringify(sci))}, '', window['${id}'][${i}].credit, window['${id}'][${i}].thumb)"
           title="${esc(it.title)}">
           <img src="${esc(it.thumb)}" loading="lazy" onerror="this.closest('button').remove()" alt="${esc(it.title)}" class="w-full h-full object-cover group-hover:scale-105 transition">

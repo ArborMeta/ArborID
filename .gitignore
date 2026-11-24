@@ -12,6 +12,16 @@ dist/
 tools/cache/
 tools/apc/
 
+# Photo sorting: keep the scripts, not the GPU venv, downloads, logs or bulky results
+# (full_results.jsonl is kept in the release backup zip instead)
+experiments/photo-sort/.venv/
+experiments/photo-sort/images/
+experiments/photo-sort/cache/
+experiments/photo-sort/*.log
+experiments/photo-sort/results*.json
+experiments/photo-sort/full_results.jsonl
+experiments/photo-sort/review.html
+
 # Editor / OS clutter
 .vscode/
 .idea/
