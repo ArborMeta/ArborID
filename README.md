@@ -5,6 +5,7 @@ A Windows desktop field guide to Australian trees and woody plants: **3,923 nati
 ## Features
 
 - **Browse and search** 3,923 species from 91 genera, including *Eucalyptus*, *Acacia*, *Banksia*, *Ficus* and *Melaleuca*. Each has at least 50 ALA records.
+- **Search by any common name:** 7,761 names from ALA, so "snow gum" finds *Eucalyptus pauciflora* even though its main name is "White Sally". Best matches come first, and the card says which name matched.
 - **Filter** by family, genus, native state, bark, foliage and habitat, or jump by letter.
 - **Offline photos:** 3,749 openly licensed photos are built in, each with its photographer credit.
 - **Native ranges** per state, from Kew's World Checklist of Vascular Plants, with the ACT checked against the Australian Plant Census.

@@ -129,6 +129,8 @@ def main():
             records.append({
                 "sci": s["scientificName"],
                 "common": s.get("commonNameSingle") or "",
+                # every common name ALA lists, for search (e.g. "Snow Gum" for E. pauciflora)
+                "names": list(dict.fromkeys(n.strip() for n in (s.get("commonName") or "").split(",") if n.strip())),
                 "family": s.get("family") or "",
                 "genus": s.get("genus") or g,
                 "states": sorted(states.get(s["scientificName"], [])),

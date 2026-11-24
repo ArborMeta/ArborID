@@ -111,7 +111,7 @@
         <div>
           <h1 class="font-serif text-lg font-bold tracking-wide text-eucalyptus-900 dark:text-eucalyptus-100 flex items-center gap-2">
             AusTree Atlas
-            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.1</span>
+            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.2</span>
           </h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Australian Botanical Index & Taxonomic Key</p>
         </div>
@@ -120,18 +120,6 @@
       <!-- Action Tools & Theme Selector -->
       <div class="flex items-center space-x-2 sm:space-x-3">
         
-        <!-- View Mode Switcher: Field Photo vs Botanical Plate -->
-        <div class="bg-slate-200 dark:bg-slate-800/90 p-1 rounded-lg flex items-center text-xs font-medium border border-slate-300 dark:border-slate-700">
-          <button id="btn-view-photo" onclick="setViewMode('photo')" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all">
-            <i class="fa-solid fa-camera"></i>
-            <span class="hidden sm:inline">Field Photo</span>
-          </button>
-          <button id="btn-view-plate" onclick="setViewMode('plate')" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all">
-            <i class="fa-solid fa-pen-nib"></i>
-            <span class="hidden sm:inline">Botanical Plate</span>
-          </button>
-        </div>
-
         <!-- Add Custom Record Button -->
         <button onclick="openAddSpecimenModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-eucalyptus-600 hover:bg-eucalyptus-700 text-white shadow-sm flex items-center gap-1.5 transition">
           <i class="fa-solid fa-plus"></i>
@@ -533,7 +521,7 @@
 
       const curated = RAW_KEY_SPECIES.map(s => {
         const a = alaByName[s.sci.toLowerCase()];
-        const base = a ? { ...s, curated: true, occ: a.occ, guid: a.guid, alaPhoto: a.photo } : { ...s, curated: true };
+        const base = a ? { ...s, curated: true, occ: a.occ, guid: a.guid, alaPhoto: a.photo, names: a.names || [] } : { ...s, curated: true };
         return withNativeRange(base, s.states);
       });
       const have = new Set(curated.map(s => s.sci.toLowerCase()));
@@ -554,7 +542,8 @@
                  ` Bark, habitat and height are not yet recorded in this atlas.`,
           occ: a.occ,
           guid: a.guid,
-          alaPhoto: a.photo
+          alaPhoto: a.photo,
+          names: a.names || []
         }, a.states))
         .sort((x, y) => x.sci.localeCompare(y.sci));
 
@@ -588,7 +577,6 @@
     // Master state
     let ALL_SPECIES = [];
     let FILTERED_SPECIES = [];
-    let currentViewMode = 'photo'; // 'photo' or 'plate'
     let currentActiveLetter = '';
     let currentPage = 1;
     let pageSize = 24;
@@ -599,10 +587,6 @@
        ========================================================================== */
 
     window.onload = function() {
-      // Load saved preferences
-      const savedView = localStorage.getItem('austree_view_mode');
-      if (savedView) currentViewMode = savedView;
-
       // Load cached photo URLs
       const storedPhotos = localStorage.getItem('austree_photo_cache_v2');
       if (storedPhotos) {
@@ -627,31 +611,10 @@
       // Initialize UI controls
       populateDropdownFilters();
       buildAZNavigation();
-      updateViewButtonsUI();
 
       // Run initial search/filter
       applyFilters();
     };
-
-    function setViewMode(mode) {
-      currentViewMode = mode;
-      localStorage.setItem('austree_view_mode', mode);
-      updateViewButtonsUI();
-      renderSpeciesGrid();
-    }
-
-    function updateViewButtonsUI() {
-      const btnPhoto = document.getElementById('btn-view-photo');
-      const btnPlate = document.getElementById('btn-view-plate');
-      
-      if (currentViewMode === 'photo') {
-        btnPhoto.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all bg-eucalyptus-600 text-white shadow-sm font-semibold";
-        btnPlate.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
-      } else {
-        btnPlate.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all bg-eucalyptus-600 text-white shadow-sm font-semibold";
-        btnPhoto.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
-      }
-    }
 
     /* ==========================================================================
        3. FILTER & TAXONOMIC KEY SEARCH ENGINE
@@ -735,8 +698,43 @@
       showToast('Taxonomic key filters reset to default');
     }
 
+    // Search helpers: compare names ignoring case, hyphens, apostrophes and extra spaces,
+    // so "smooth barked apple" finds "Smooth-Barked Apple".
+    const normName = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+    // Every common name of a species (main name first), normalised once and cached.
+    function searchNames(s) {
+      if (!s._names) {
+        const all = [s.common, ...(s.names || [])].filter(n => n && n !== 'No common name recorded');
+        s._names = [...new Set(all)].map(n => ({ raw: n, norm: normName(n) }));
+      }
+      return s._names;
+    }
+
+    // Lower score = better match; null = no match. Records which other name matched.
+    function searchScore(s, q) {
+      s._alsoKnown = '';
+      const sci = normName(s.sci);
+      if (sci === q) return 0;
+      let best = null;
+      for (const n of searchNames(s)) {
+        const score = n.norm === q ? 0 : n.norm.startsWith(q) ? 1
+          : (' ' + n.norm).includes(' ' + q) ? 2 : n.norm.includes(q) ? 3 : null;
+        if (score !== null && (best === null || score < best.score)) best = { score, name: n.raw };
+      }
+      if (best) {
+        if (best.name !== s.common) s._alsoKnown = best.name;
+        return best.score;
+      }
+      if (sci.startsWith(q)) return 4;
+      if (sci.includes(q)) return 5;
+      if (normName(s.family).includes(q)) return 6;
+      if (normName(s.notes).includes(q)) return 7;
+      return null;
+    }
+
     function applyFilters() {
-      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      const query = normName(document.getElementById('search-input').value);
       const famVal = document.getElementById('filter-family').value;
       const genVal = document.getElementById('filter-genus').value;
       const barkVal = document.getElementById('filter-bark').value;
@@ -745,13 +743,13 @@
       const biomeVal = document.getElementById('filter-biome').value;
 
       FILTERED_SPECIES = ALL_SPECIES.filter(s => {
-        // Search query match
+        // Search query match: scientific name, any common name, family or notes
+        s._score = 0;
+        s._alsoKnown = '';
         if (query) {
-          const matchSci = s.sci.toLowerCase().includes(query);
-          const matchCommon = s.common.toLowerCase().includes(query);
-          const matchFam = s.family.toLowerCase().includes(query);
-          const matchNotes = s.notes.toLowerCase().includes(query);
-          if (!matchSci && !matchCommon && !matchFam && !matchNotes) return false;
+          const score = searchScore(s, query);
+          if (score === null) return false;
+          s._score = score;
         }
 
         // Family
@@ -777,6 +775,10 @@
 
         return true;
       });
+
+      // Best matches first (exact name, then names starting with the query, ...).
+      // Array sort is stable, so equal scores keep the usual order.
+      if (query) FILTERED_SPECIES.sort((a, b) => a._score - b._score);
 
       currentPage = 1;
       updateUIHeaderStats();
@@ -1042,10 +1044,10 @@
           <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700" title="${sp.rangeSource === 'native' ? 'Native range' : 'Has records here (native range not verified)'}">${st}</span>
         `).join('');
 
-        // Visualizer Header (Photo or Plate)
+        // Card picture: the species photo, or its botanical drawing when there is no photo
         let visualizerContent = '';
         const hasPhoto = !!getBundledPhoto(sp) || sp.custom;
-        if (currentViewMode === 'photo' && !hasPhoto) {
+        if (!hasPhoto) {
           // No real photo exists for this record: draw its plate immediately
           visualizerContent = `
             <div class="relative w-full h-48 bg-slate-900/90 plate-bg overflow-hidden flex items-center justify-center border-b border-slate-800 text-emerald-400">
@@ -1054,7 +1056,7 @@
               ${sp.height !== NOT_RECORDED ? `<div class="absolute bottom-2 left-2 bg-slate-950/70 text-emerald-400 text-[10px] font-mono px-2 py-0.5 rounded">${sp.height}</div>` : ''}
             </div>
           `;
-        } else if (currentViewMode === 'photo') {
+        } else {
           visualizerContent = `
             <div class="relative w-full h-48 bg-slate-100 dark:bg-slate-950 overflow-hidden flex items-center justify-center group-hover:opacity-95 transition">
               <img id="${imgId}" src="" alt="${sp.sci}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-0" />
@@ -1064,16 +1066,6 @@
           `;
           // Trigger async photo fetch
           setTimeout(() => fetchTaxonPhoto(sp.sci, imgId, badgeId), 10);
-        } else {
-          // Botanical SVG Plate Mode
-          visualizerContent = `
-            <div class="relative w-full h-48 bg-slate-900/90 plate-bg overflow-hidden flex items-center justify-center border-b border-slate-800 text-emerald-400">
-              ${renderBotanicalPlateSVG(sp)}
-              <div class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-sm text-wattle-400 text-[9px] font-mono px-2 py-0.5 rounded border border-wattle-500/20">
-                ${sp.family}
-              </div>
-            </div>
-          `;
         }
 
         card.innerHTML = `
@@ -1088,6 +1080,7 @@
                 ${sp.sci}
               </h3>
               <p class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-0.5">${sp.common}</p>
+              ${sp._alsoKnown ? `<p class="text-[11px] text-wattle-500 mt-0.5"><i class="fa-solid fa-magnifying-glass text-[9px] mr-1"></i>Also known as: ${sp._alsoKnown}</p>` : ''}
               ${sp.occ ? `<p class="text-[10px] font-mono text-slate-400 mt-0.5">${sp.occ.toLocaleString()} ALA records</p>` : ''}
             </div>
 
