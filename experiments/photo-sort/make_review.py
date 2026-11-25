@@ -6,7 +6,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 LABELS = [("flower", "Flower"), ("fruit_seed", "Fruit / seed"), ("leaf", "Leaf"), ("bark", "Bark"),
-          ("whole_tree", "Whole tree"), ("mixed_unclear", "Mixed / unclear"), ("other", "Other (specimen sheet, label…)")]
+          ("whole_tree", "Tree"), ("mixed_unclear", "Mixed / unclear"), ("other", "Other (specimen sheet, label…)")]
 NAME = dict(LABELS)
 
 data = json.loads((HERE / "results.json").read_text(encoding="utf-8"))

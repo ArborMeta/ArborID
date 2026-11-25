@@ -1,0 +1,14 @@
+{
+ "onnx": "bioclip-2_visual_w8.onnx",
+ "head": "bioclip-2_head.npz",
+ "temperature": 1.0019302368164062,
+ "multi_photo_damping": 0.5,
+ "location": {
+  "near_km": 25,
+  "wide_km": 50,
+  "wide_weight": 0.2,
+  "gamma": 0.75,
+  "absent": 0.01
+ },
+ "note": "Location: records within 25 km count fully, 25-50 km partly; species with none within 50 km are down-weighted. Chosen 2026-11-25 over the tuned 10 km (less strict where records are sparse; test top-1 63% vs 65%)."
+}

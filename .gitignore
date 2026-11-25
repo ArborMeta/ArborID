@@ -27,3 +27,14 @@ experiments/photo-sort/review.html
 .idea/
 Thumbs.db
 desktop.ini
+
+# Identify model: training photos, embeddings and exported models are rebuilt by
+# experiments/photo-sort/identify/ (see README). The model ships inside the .exe;
+# model/*.onnx (346 MB) is over GitHub's file size limit, so it is kept in the backup zip.
+experiments/photo-sort/images_train/
+experiments/photo-sort/identify/emb/
+experiments/photo-sort/identify/model/
+experiments/photo-sort/identify/grid.jsonl
+experiments/photo-sort/identify/coords.json
+experiments/photo-sort/identify/eval_*.npz
+model/*.onnx

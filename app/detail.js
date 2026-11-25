@@ -195,11 +195,22 @@
       attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, USGS, NGA and contributors'
     }).addTo(map);
     const [fqBase, fqRange] = nativeFq(sp);
-    L.tileLayer.wms(`${BIOCACHE}/mapping/wms/reflect?fq=${encodeURIComponent(fqBase)}`, {
-      layers: 'ALA:occurrences', format: 'image/png', transparent: true, opacity: 0.9,
+    // 512px tiles: ALA draws each tile with a full native-range query, so 4x fewer,
+    // larger tiles means much less work on ALA's side for the same map.
+    const dots = L.tileLayer.wms(`${BIOCACHE}/mapping/wms/reflect?fq=${encodeURIComponent(fqBase)}`, {
+      layers: 'ALA:occurrences', format: 'image/png', transparent: true, opacity: 0.9, tileSize: 512,
       q: occQuery(sp), fq: fqRange, ENV: 'color:dc2626;name:circle;size:3;opacity:0.85',
       attribution: 'Records: Atlas of Living Australia', maxZoom: 18
-    }).addTo(map);
+    });
+    // "Loading records…" label while ALA is still drawing the dots.
+    // (Listeners go on before addTo: Leaflet starts loading as soon as the layer is added.)
+    const note = document.createElement('div');
+    note.className = 'absolute top-2 right-2 z-[500] bg-slate-900/80 text-white text-[11px] px-2 py-1 rounded pointer-events-none';
+    note.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Loading records…';
+    map.getContainer().appendChild(note);
+    dots.on('loading', () => { note.hidden = false; });
+    dots.on('load', () => { note.hidden = true; });
+    dots.addTo(map);
     // The panel lays out after this runs; resize and re-fit once it has its real size.
     [60, 300].forEach(ms => setTimeout(() => { if (map) { map.invalidateSize(); map.fitBounds(AUS); } }, ms));
   }
@@ -330,7 +341,7 @@
   /* ---------- ALA photos sorted by plant part (one section each) ---------- */
   const PART_SECTIONS = [
     ['f', 'Flowers', 'fa-fan'], ['s', 'Fruit & seeds', 'fa-seedling'], ['l', 'Leaves', 'fa-leaf'],
-    ['b', 'Bark', 'fa-tree'], ['t', 'Whole tree', 'fa-mountain-sun']
+    ['b', 'Bark', 'fa-tree'], ['t', 'Tree', 'fa-mountain-sun']
   ];
   const SHOW_FIRST = 12;
 

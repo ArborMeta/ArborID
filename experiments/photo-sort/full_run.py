@@ -1,5 +1,5 @@
 """Sort ALA gallery photos for every species in the app into
-Flowers / Fruit / Leaves / Bark / Whole tree, using OpenCLIP ViT-H-14-378 (DFN-5B) on the GPU.
+Flowers / Fruit / Leaves / Bark / Tree, using OpenCLIP ViT-H-14-378 (DFN-5B) on the GPU.
 
 - Up to 60 openly licensed photos per species from native-range ALA records
   (all photos of a record, max 4 per record).

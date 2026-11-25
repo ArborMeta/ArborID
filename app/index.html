@@ -111,7 +111,7 @@
         <div>
           <h1 class="font-serif text-lg font-bold tracking-wide text-eucalyptus-900 dark:text-eucalyptus-100 flex items-center gap-2">
             AusTree Atlas
-            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.2</span>
+            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.3</span>
           </h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Australian Botanical Index & Taxonomic Key</p>
         </div>
@@ -120,6 +120,12 @@
       <!-- Action Tools & Theme Selector -->
       <div class="flex items-center space-x-2 sm:space-x-3">
         
+        <!-- Identify from photos (desktop app only; shown by identify.js) -->
+        <button id="identify-btn" onclick="openIdentify()" class="hidden px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-white shadow-sm flex items-center gap-1.5 transition" title="Identify a plant from your photos">
+          <i class="fa-solid fa-camera"></i>
+          <span class="hidden md:inline">Identify</span>
+        </button>
+
         <!-- Add Custom Record Button -->
         <button onclick="openAddSpecimenModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-eucalyptus-600 hover:bg-eucalyptus-700 text-white shadow-sm flex items-center gap-1.5 transition">
           <i class="fa-solid fa-plus"></i>
@@ -424,6 +430,8 @@
   <script src="data/native_ranges.js"></script>
   <!-- ALA PHOTOS SORTED BY PLANT PART (experiments/photo-sort/build_app_data.py) -->
   <script src="data/photo_categories.js"></script>
+  <!-- CARD PHOTOS FOR SPECIES WITHOUT A MAIN PHOTO (experiments/photo-sort/build_profile_photos.py) -->
+  <script src="data/profile_photos.js"></script>
 
   <!-- APPLICATION LOGIC & COMPREHENSIVE BOTANICAL DATASET -->
   <script>
@@ -567,11 +575,12 @@
       return sp;
     }
 
-    // Best offline photo for a record: curated iNaturalist photo, else ALA thumbnail.
+    // Best offline photo for a record: curated iNaturalist photo, else ALA's default
+    // thumbnail, else a profile photo picked from the species' sorted photos (Tree first).
     function getBundledPhoto(sp) {
       const inat = (window.BUNDLED_PHOTOS || {})[sp.sci];
       if (inat) return { file: inat.file, large: inat.file, attr: inat.attr, license: inat.license, via: 'iNaturalist' };
-      return sp.alaPhoto || null;
+      return sp.alaPhoto || (window.PROFILE_PHOTOS || {})[sp.sci] || null;
     }
 
     // Master state
@@ -1325,5 +1334,6 @@ Generated via AusTree Atlas — Independent Desktop Botanical Software
   <!-- SPECIES DETAIL VIEW (map, gallery, bark photos, description) -->
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="detail.js"></script>
+  <script src="identify.js"></script>
 </body>
 </html>

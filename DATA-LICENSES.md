@@ -17,12 +17,18 @@ Photos are credited in the app wherever they're enlarged.
 | Native state ranges | [World Checklist of Vascular Plants](https://powo.science.kew.org/), Royal Botanic Gardens, Kew, via the [GBIF](https://www.gbif.org/) API | CC BY |
 | ACT native status | Australian Plant Census (APC), Council of Heads of Australasian Herbaria | CC BY 3.0 AU |
 
+## Identify model (`model/`)
+
+- **Image encoder:** [BioCLIP 2](https://huggingface.co/imageomics/bioclip-2) by the Imageomics Institute, MIT licence. It's bundled as an ONNX export with 8-bit weights.
+- **Species classifier:** trained on BioCLIP 2 features of about 160,000 ALA photos (credits as above). The classifier stores numbers only, not photos.
+- **Location grid (`grid.npz`):** counts of each species' native wild ALA records per 0.1° cell. Atlas of Living Australia, CC BY 4.0.
+
 ## Loaded live (not bundled)
 
 The species page fetches these while it's open. They aren't stored in this repository.
 
 - ALA occurrence maps, records and photo gallery: each photo is credited with its licence in the app.
-- Plant-part photo sections (Flowers, Fruit & seeds, Leaves, Bark, Whole tree): `app/data/photo_categories.js` stores only ALA image IDs, photographer names and licences (CC or public domain only). The photos themselves load from images.ala.org.au and stay under their photographers' licences. The sorting was done with OpenCLIP ViT-H-14-378 using Apple's DFN-5B weights; the model is not included in this repository.
+- Plant-part photo sections (Flowers, Fruit & seeds, Leaves, Bark, Tree): `app/data/photo_categories.js` stores only ALA image IDs, photographer names and licences (CC or public domain only). The photos themselves load from images.ala.org.au and stay under their photographers' licences. The sorting was done with OpenCLIP ViT-H-14-378 using Apple's DFN-5B weights; the model is not included in this repository.
 - Wikipedia summaries: CC BY-SA 4.0, linked to the source article.
 - Wikimedia Commons bark photos: each credited with its author and licence.
 - Esri World Topographic Map tiles: © Esri and contributors.

@@ -5,7 +5,7 @@ Format (compact):
     creators: ["Jane Smith", ...], licenses: ["CC-BY 4.0 (Int)", ...],
     species: { "Eucalyptus pauciflora": [["<ALA image id>", "fl", creatorIdx, licenseIdx], ...] }
   }
-Category letters: f = Flowers, s = Fruit & seeds, l = Leaves, b = Bark, t = Whole tree.
+Category letters: f = Flowers, s = Fruit & seeds, l = Leaves, b = Bark, t = Tree.
 Photos within a species are ordered by model confidence (best first).
 """
 import json
