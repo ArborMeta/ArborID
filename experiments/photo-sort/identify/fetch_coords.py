@@ -15,7 +15,7 @@ from train import split_of
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "coords.json"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 PER_SPLIT = 4000
 
 

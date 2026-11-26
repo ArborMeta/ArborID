@@ -21,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 APP = HERE.parent.parent / "app"
 IMG = HERE / "images"
 CACHE = HERE / "cache"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app; photo-sort trial)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app; photo-sort trial)"}
 N_SPECIES, PER_SPECIES, MAX_PER_GENUS = 50, 30, 3
 STATE_NAMES = {"NSW": "New South Wales", "VIC": "Victoria", "QLD": "Queensland", "WA": "Western Australia",
                "SA": "South Australia", "TAS": "Tasmania", "NT": "Northern Territory",

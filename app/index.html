@@ -595,8 +595,19 @@
        ========================================================================== */
 
     window.onload = function() {
+      // One-time move of data saved under the app's previous storage keys
+      try {
+        [['austree_custom_records', 'arborid_custom_records'], ['austree_photo_cache_v2', 'arborid_photo_cache_v2']].forEach(([from, to]) => {
+          const v = localStorage.getItem(from);
+          if (v !== null && localStorage.getItem(to) === null) localStorage.setItem(to, v);
+          if (v !== null && localStorage.getItem(to) !== null) localStorage.removeItem(from);
+        });
+        // settings from features that no longer exist (theme menu, plate view, old photo cache)
+        ['austree_theme', 'austree_view_mode', 'austree_photo_cache'].forEach(k => localStorage.removeItem(k));
+      } catch (e) { /* storage unavailable: nothing to move */ }
+
       // Load cached photo URLs
-      const storedPhotos = localStorage.getItem('austree_photo_cache_v2');
+      const storedPhotos = localStorage.getItem('arborid_photo_cache_v2');
       if (storedPhotos) {
         try { cachedPhotoUrls = JSON.parse(storedPhotos); } catch(e) {}
       }
@@ -605,7 +616,7 @@
       ALL_SPECIES = generateFull520SpeciesDataset();
 
       // Load user added custom records from localStorage
-      const userRecords = localStorage.getItem('austree_custom_records');
+      const userRecords = localStorage.getItem('arborid_custom_records');
       if (userRecords) {
         try {
           const parsed = JSON.parse(userRecords);
@@ -994,7 +1005,7 @@
 
     function savePhotoCache() {
       try {
-        localStorage.setItem('austree_photo_cache_v2', JSON.stringify(cachedPhotoUrls));
+        localStorage.setItem('arborid_photo_cache_v2', JSON.stringify(cachedPhotoUrls));
       } catch(e){}
     }
 
@@ -1295,10 +1306,10 @@ Generated via ArborID — Independent Desktop Botanical Software
 
       // Save to localStorage
       try {
-        const stored = localStorage.getItem('austree_custom_records');
+        const stored = localStorage.getItem('arborid_custom_records');
         const customArr = stored ? JSON.parse(stored) : [];
         customArr.unshift(newSpecimen);
-        localStorage.setItem('austree_custom_records', JSON.stringify(customArr));
+        localStorage.setItem('arborid_custom_records', JSON.stringify(customArr));
       } catch(e){}
 
       closeAddSpecimenModal();

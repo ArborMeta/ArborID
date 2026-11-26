@@ -19,7 +19,7 @@ sys.path.insert(0, str(HERE.parent))
 from trial import load_js, native_fqs, APP  # noqa: E402
 from fetch_grid import EXTRA_FQ  # noqa: E402
 
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 SEARCH = "https://biocache-ws.ala.org.au/ws/occurrences/search?"
 
 

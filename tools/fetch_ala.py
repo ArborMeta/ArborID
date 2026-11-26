@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "tools" / "cache"
 PHOTO_DIR = ROOT / "app" / "photos" / "ala"
 OUT = ROOT / "app" / "data" / "ala_species.js"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 
 STATES = {
     "New South Wales": "NSW", "Victoria": "VIC", "Queensland": "QLD",

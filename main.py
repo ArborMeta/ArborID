@@ -19,10 +19,16 @@ def resource_dir() -> Path:
 
 
 def data_dir() -> Path:
-    # Persistent browser profile so localStorage (custom specimens, theme,
-    # photo cache) survives between launches.
-    # Per-user data folder (name kept stable so saved specimens persist across versions).
-    root = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "AusTreeAtlas"
+    # Persistent browser profile so localStorage (custom specimens, photo cache)
+    # survives between launches.
+    base = Path(os.environ.get("LOCALAPPDATA", Path.home()))
+    root = base / "ArborID"
+    legacy = base / "AusTreeAtlas"   # data folder used by versions before the rename
+    if legacy.is_dir() and not root.exists():
+        try:
+            legacy.rename(root)      # one-time move; keeps saved specimens
+        except OSError:
+            return legacy            # couldn't move (e.g. a file is open): keep using it, lose nothing
     root.mkdir(parents=True, exist_ok=True)
     return root
 

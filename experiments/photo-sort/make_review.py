@@ -49,7 +49,7 @@ toc = " ".join(f'<a href="#{e(s["sci"].replace(" ", "_"))}"><i>{e(s["sci"])}</i>
 
 page = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Photo sorting trial – AusTree Atlas</title>
+<title>Photo sorting trial – ArborID</title>
 <style>
 :root {{ --bg:#0f172a; --panel:#111c33; --text:#e2e8f0; --muted:#94a3b8; --accent:#79a565; --warn:#f59e0b; }}
 * {{ box-sizing:border-box }}

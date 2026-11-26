@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 APP = ROOT / "app"
 OUT_DIR = APP / "photos" / "profile"
 OUT_JS = APP / "data" / "profile_photos.js"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 PREFERENCE = ["t", "f", "l", "s", "b"]   # Tree, Flowers, Leaves, Fruit & seeds, Bark
 
 

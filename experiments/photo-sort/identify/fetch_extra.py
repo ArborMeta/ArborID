@@ -27,7 +27,7 @@ from trial import load_js, APP  # noqa: E402
 
 OUT = HERE / "extra.jsonl"
 IMAGES = SORT / "images_extra"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 INAT_DATASET = "50c9509d-22c7-4a22-a47d-8c48425ef4a7"
 RARE, TARGET, PER_OBS = 30, 60, 2
 

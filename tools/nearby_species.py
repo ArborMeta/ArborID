@@ -17,7 +17,7 @@ import urllib.request
 from pathlib import Path
 
 APP = Path(__file__).resolve().parent.parent / "app"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 STATE_CODES = {"New South Wales": "NSW", "Victoria": "VIC", "Queensland": "QLD", "South Australia": "SA",
                "Western Australia": "WA", "Tasmania": "TAS", "Northern Territory": "NT",
                "Australian Capital Territory": "ACT"}

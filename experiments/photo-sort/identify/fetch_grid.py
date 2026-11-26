@@ -16,7 +16,7 @@ sys.path.insert(0, str(HERE.parent))
 from trial import load_js, native_fqs, APP  # noqa: E402
 
 OUT = HERE / "grid.jsonl"
-UA = {"User-Agent": "AusTreeAtlas/1.0 (personal botanical desktop app)"}
+UA = {"User-Agent": "ArborID/1.0 (personal botanical desktop app)"}
 EXTRA_FQ = ["-basisOfRecord:LIVING_SPECIMEN",
             '-dataResourceName:"Records of the Australian National Botanic Gardens Seedbank"']
 

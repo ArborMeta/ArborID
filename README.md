@@ -36,7 +36,7 @@ Get **`ArborID.exe`** from the [Releases](../../releases) page. It's one portabl
 
 - Needs Windows 10 or 11 (64-bit) with the Microsoft Edge WebView2 Runtime. Windows 11 has it built in.
 - The `.exe` isn't digitally signed, so Windows may say "Windows protected your PC". Choose **More info → Run anyway**.
-- Specimens you add are saved per user in `%LOCALAPPDATA%\AusTreeAtlas`.
+- Specimens you add are saved per user in `%LOCALAPPDATA%\ArborID`.
 
 ## Build from source
 
