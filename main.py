@@ -1,4 +1,4 @@
-"""ArborID desktop launcher (formerly AusTree Atlas).
+"""ArborID desktop launcher.
 
 Opens the bundled web app (app/index.html) in a native window using the
 Edge WebView2 engine that ships with Windows 10/11.
@@ -21,7 +21,7 @@ def resource_dir() -> Path:
 def data_dir() -> Path:
     # Persistent browser profile so localStorage (custom specimens, theme,
     # photo cache) survives between launches.
-    # Folder keeps the old "AusTreeAtlas" name so specimens saved before the rename to ArborID are kept.
+    # Per-user data folder (name kept stable so saved specimens persist across versions).
     root = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "AusTreeAtlas"
     root.mkdir(parents=True, exist_ok=True)
     return root

@@ -1,4 +1,4 @@
-"""Import real species from the Atlas of Living Australia (ALA) into AusTree Atlas.
+"""Import real species from the Atlas of Living Australia (ALA) into ArborID.
 
 For every genus listed in the app's FAMILIES_SCHEMA:
   * all accepted species with >= MIN_RECORDS ALA occurrence records (BIE search)

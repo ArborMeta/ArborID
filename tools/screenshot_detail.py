@@ -7,7 +7,7 @@ from PIL import ImageGrab
 ctypes.windll.user32.SetProcessDPIAware()
 root = Path(__file__).resolve().parent.parent
 sci, out = sys.argv[1], Path(sys.argv[2])
-TITLE = "AusTree Atlas screenshot test"
+TITLE = "ArborID screenshot test"
 def window_rect():
     h = ctypes.windll.user32.FindWindowW(None, TITLE)
     r = wintypes.RECT(); ctypes.windll.user32.GetWindowRect(h, ctypes.byref(r))

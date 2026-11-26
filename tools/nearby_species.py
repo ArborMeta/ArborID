@@ -1,4 +1,4 @@
-"""List the AusTree Atlas species with native ALA records near a photo's GPS location.
+"""List the ArborID species with native ALA records near a photo's GPS location.
 
 Used to narrow down candidates when identifying a tree from a photo.
 
@@ -94,7 +94,7 @@ def main():
         radius *= 2
 
     print(f"Location: {lat:.5f}, {lon:.5f}" + (f"   taken: {when}" if when else ""))
-    print(f"State: {state}.  {len(hits)} AusTree Atlas species native to it with wild records within {radius:g} km")
+    print(f"State: {state}.  {len(hits)} ArborID species native to it with wild records within {radius:g} km")
     print(f"({len(dropped)} more have records here but are not native to {state}, so are likely planted: excluded)")
     genera = {}
     for n, sci in hits:

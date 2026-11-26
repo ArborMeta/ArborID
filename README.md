@@ -1,7 +1,5 @@
 # ArborID
 
-*Formerly AusTree Atlas.*
-
 A Windows desktop field guide to Australian trees and woody plants: **3,923 native species** with photos, native ranges, and live distribution maps drawn from the [Atlas of Living Australia](https://www.ala.org.au/).
 
 ## Identify a plant from photos
@@ -38,7 +36,7 @@ Get **`ArborID.exe`** from the [Releases](../../releases) page. It's one portabl
 
 - Needs Windows 10 or 11 (64-bit) with the Microsoft Edge WebView2 Runtime. Windows 11 has it built in.
 - The `.exe` isn't digitally signed, so Windows may say "Windows protected your PC". Choose **More info → Run anyway**.
-- Specimens you add are saved per user in `%LOCALAPPDATA%\AusTreeAtlas`. The folder kept its name when the app was renamed from AusTree Atlas, so earlier specimens carry over.
+- Specimens you add are saved per user in `%LOCALAPPDATA%\AusTreeAtlas`.
 
 ## Build from source
 

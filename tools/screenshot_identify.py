@@ -19,7 +19,7 @@ from main import Api  # noqa: E402
 
 ctypes.windll.user32.SetProcessDPIAware()
 out, photos = Path(sys.argv[1]), sys.argv[2:]
-TITLE = "AusTree Atlas identify test"
+TITLE = "ArborID identify test"
 
 
 def window_rect():

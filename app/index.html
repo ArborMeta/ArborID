@@ -1172,7 +1172,7 @@
 
       const content = `
 ================================================================================
-           HERBARIUM SPECIMEN SHEET — AUSTREE ATLAS STANDALONE INDEX
+           HERBARIUM SPECIMEN SHEET — ARBORID STANDALONE INDEX
 ================================================================================
 
 TAXONOMIC CLASSIFICATION:
@@ -1237,7 +1237,7 @@ Generated via ArborID — Independent Desktop Botanical Software
 
       const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-      const filename = `austree_atlas_export_${new Date().toISOString().split('T')[0]}.csv`;
+      const filename = `arborid_export_${new Date().toISOString().split('T')[0]}.csv`;
 
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
