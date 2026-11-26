@@ -19,9 +19,13 @@ Photos are credited in the app wherever they're enlarged.
 
 ## Identify model (`model/`)
 
-- **Image encoder:** [BioCLIP 2](https://huggingface.co/imageomics/bioclip-2) by the Imageomics Institute, MIT licence. It's bundled as an ONNX export with 8-bit weights.
-- **Species classifier:** trained on BioCLIP 2 features of about 160,000 ALA photos (credits as above). The classifier stores numbers only, not photos.
-- **Location grid (`grid.npz`):** counts of each species' native wild ALA records per 0.1° cell. Atlas of Living Australia, CC BY 4.0.
+- **Image encoder:** [BioCLIP 2](https://huggingface.co/imageomics/bioclip-2) by the Imageomics Institute, MIT licence. Its last 8 blocks were fine-tuned for this app. It's bundled as an ONNX export with 8-bit weights.
+- **Training photos:** the model and species classifier were trained on:
+  - about 126,000 ALA photos;
+  - about 18,000 extra photos: [iNaturalist](https://www.inaturalist.org/) research-grade observations via GBIF (CC0, CC BY or CC BY-NC only) and ALA photo records outside the native-range filter.
+
+  The model stores learned numbers only, not the photos.
+- **Location grid (`grid.npz`) and season table (`months.npy`):** counts of each species' native wild ALA records per 0.1° cell and per month. Atlas of Living Australia, CC BY 4.0.
 
 ## Loaded live (not bundled)
 

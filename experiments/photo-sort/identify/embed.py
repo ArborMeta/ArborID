@@ -25,7 +25,7 @@ from trial import load_js, APP  # noqa: E402
 
 EMB = HERE / "emb"
 IMAGES = SORT / "images_train"
-BATCH = 256
+BATCH = int(__import__("os").environ.get("GPU_BATCH", "256"))
 
 
 def build_index():
@@ -46,8 +46,8 @@ def main():
     name = sys.argv[1]
     EMB.mkdir(exist_ok=True)
     rows, species = build_index()
-    model, _, preprocess = open_clip.create_model_and_transforms(f"hf-hub:imageomics/{name}")
-    tok = open_clip.get_tokenizer(f"hf-hub:imageomics/{name}")
+    from ftmodel import create
+    model, preprocess, tok = create(name)
     model = model.cuda().eval().half()
 
     # text: taxonomic + common-name prompts, averaged
@@ -80,9 +80,12 @@ def main():
         for bi, tensors in enumerate(nxt):
             ok = [j for j, t in enumerate(tensors) if t is not None]
             missing += len(tensors) - len(ok)
+            from ftmodel import gpu_rest
+            tb = time.time()
             with torch.no_grad():
                 x = torch.stack([tensors[j] for j in ok]).cuda().half()
                 e = torch.nn.functional.normalize(model.encode_image(x).float(), dim=-1).cpu().numpy()
+            gpu_rest(tb)
             if out is None:
                 out = np.zeros((len(rows), e.shape[1]), dtype=np.float16)
             for k, j in enumerate(ok):

@@ -38,3 +38,6 @@ experiments/photo-sort/identify/grid.jsonl
 experiments/photo-sort/identify/coords.json
 experiments/photo-sort/identify/eval_*.npz
 model/*.onnx
+experiments/photo-sort/images_extra/
+experiments/photo-sort/identify/extra.jsonl
+experiments/photo-sort/identify/extras_*.json

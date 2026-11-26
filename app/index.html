@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AusTree Atlas — Australian Tree Index & Taxonomic Key</title>
+  <title>ArborID — Australian Tree Index & Taxonomic Key</title>
+  <link rel="icon" type="image/png" href="icon.png">
   
   <!-- Tailwind CSS -->
   <script src="vendor/tailwind.js"></script>
@@ -105,13 +106,11 @@
       
       <!-- Brand Logo & Title -->
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-eucalyptus-600 to-eucalyptus-800 flex items-center justify-center text-white shadow-md shadow-eucalyptus-900/20">
-          <i class="fa-solid font-bold fa-tree text-lg text-wattle-400"></i>
-        </div>
+        <img src="icon.png" alt="ArborID" class="w-11 h-11 drop-shadow-md select-none" draggable="false">
         <div>
           <h1 class="font-serif text-lg font-bold tracking-wide text-eucalyptus-900 dark:text-eucalyptus-100 flex items-center gap-2">
-            AusTree Atlas
-            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.3</span>
+            ArborID
+            <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-eucalyptus-100 dark:bg-eucalyptus-900/60 text-eucalyptus-700 dark:text-eucalyptus-300 border border-eucalyptus-300 dark:border-eucalyptus-700">v1.0</span>
           </h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Australian Botanical Index & Taxonomic Key</p>
         </div>
@@ -1198,7 +1197,7 @@ SPECIMEN METADATA:
   Export Date:     ${new Date().toISOString().split('T')[0]}
 
 ================================================================================
-Generated via AusTree Atlas — Independent Desktop Botanical Software
+Generated via ArborID — Independent Desktop Botanical Software
 ================================================================================
       `.trim();
 

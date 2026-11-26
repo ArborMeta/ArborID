@@ -75,17 +75,11 @@ def topk_acc(logits, y, k):
 
 
 def fit_temperature(logits, y):
-    lt, yt = torch.tensor(logits), torch.tensor(y)
-    t = torch.nn.Parameter(torch.tensor(1.0))
-    opt = torch.optim.LBFGS([t], max_iter=100)
-
-    def closure():
-        opt.zero_grad()
-        loss = F.cross_entropy(lt / t, yt)
-        loss.backward()
-        return loss
-    opt.step(closure)
-    return float(t)
+    """Temperature that minimises validation log-loss (grid search: robust, unlike LBFGS here)."""
+    lt, yt = torch.tensor(logits, dtype=torch.float64), torch.tensor(y)
+    grid = np.exp(np.linspace(np.log(0.2), np.log(5.0), 161))
+    losses = [float(F.cross_entropy(lt / t, yt)) for t in grid]
+    return float(grid[int(np.argmin(losses))])
 
 
 def calibration_table(probs, y):
@@ -115,7 +109,18 @@ def main():
     zs = 100 * X[te] @ T.T
     print(f"zero-shot (text only):  top-1 {topk_acc(zs, y[te], 1):.1%}  top-5 {topk_acc(zs, y[te], 5):.1%}")
 
-    W, b, scale = train_head(X[tr], y[tr], T)
+    # --extra: add the rare-species photos from fetch_extra.py / embed_extra.py to TRAINING only
+    # (val/test stay the same ALA photos, so results stay comparable)
+    Xtr, ytr = X[tr], y[tr]
+    suffix = ""
+    if "--extra" in sys.argv:
+        sp_index = {s["sci"]: i for i, s in enumerate(idx["species"])}
+        Xe = np.load(EMB / f"{name}_extra.npy").astype(np.float32)
+        ye = np.array([sp_index[p["sci"]] for p in json.loads((EMB / f"extra_index_{name}.json").read_text(encoding="utf-8"))])
+        Xtr, ytr = np.concatenate([Xtr, Xe]), np.concatenate([ytr, ye])
+        suffix = "_extra"
+        print(f"+ {len(Xe)} extra rare-species photos in training")
+    W, b, scale = train_head(Xtr, ytr, T)
     lv, lt = logits_of(X[va], W, b, scale), logits_of(X[te], W, b, scale)
     t = fit_temperature(lv, y[va])
     pt = softmax(lt / t)
@@ -124,11 +129,20 @@ def main():
           f"top-10 {topk_acc(lt, y[te], 10):.1%}  genus right {g_right:.1%}   temperature {t:.2f}")
     print("calibration on test (image only):")
     print(calibration_table(pt, y[te]))
+    # rare species: fewer than 30 ALA field photos
+    field = np.bincount(y[ok & np.array([not p["herb"] for p in idx["photos"]])], minlength=len(T))
+    rare = field[y[te]] < 30
+    lr = lt[rare]
+    print(f"rare species only ({rare.sum()} test photos): top-1 {topk_acc(lr, y[te][rare], 1):.1%}  "
+          f"top-5 {topk_acc(lr, y[te][rare], 5):.1%}")
 
-    np.savez(HERE / f"eval_{name}.npz", W=W, b=b, scale=scale, t=t, te=np.where(te)[0], va=np.where(va)[0])
+    np.savez(HERE / f"eval_{name}{suffix}.npz", W=W, b=b, scale=scale, t=t, te=np.where(te)[0], va=np.where(va)[0])
     if "--final" in sys.argv:
         MODEL.mkdir(exist_ok=True)
-        W, b, scale = train_head(X[ok], y[ok], T)
+        Xall, yall = X[ok], y[ok]
+        if suffix:
+            Xall, yall = np.concatenate([Xall, Xe]), np.concatenate([yall, ye])
+        W, b, scale = train_head(Xall, yall, T)
         np.savez(MODEL / f"{name}_head.npz", W=W.astype(np.float16), b=b, scale=scale, t=t)
         print("final head written")
 

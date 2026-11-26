@@ -19,6 +19,7 @@ from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 MODEL = HERE / "model"
+sys.path.insert(0, str(HERE))
 
 
 class Visual(torch.nn.Module):
@@ -33,7 +34,8 @@ class Visual(torch.nn.Module):
 def main():
     name = sys.argv[1]
     MODEL.mkdir(exist_ok=True)
-    m, _, pre = open_clip.create_model_and_transforms(f"hf-hub:imageomics/{name}")
+    from ftmodel import create
+    m, pre, _ = create(name)
     print(pre)
     net = Visual(m).eval()
     f32 = MODEL / f"{name}_visual.onnx"

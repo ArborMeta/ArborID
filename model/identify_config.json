@@ -1,7 +1,7 @@
 {
- "onnx": "bioclip-2_visual_w8.onnx",
- "head": "bioclip-2_head.npz",
- "temperature": 1.0019302368164062,
+ "onnx": "bioclip-2-ft_visual_w8.onnx",
+ "head": "bioclip-2-ft_head.npz",
+ "temperature": 1.275,
  "multi_photo_damping": 0.5,
  "location": {
   "near_km": 25,
@@ -10,5 +10,10 @@
   "gamma": 0.75,
   "absent": 0.01
  },
- "note": "Location: records within 25 km count fully, 25-50 km partly; species with none within 50 km are down-weighted. Chosen 2026-11-25 over the tuned 10 km (less strict where records are sparse; test top-1 63% vs 65%)."
+ "note": "Model: BioCLIP-2 with its last 8 blocks fine-tuned (2026-11-26) on ~126k ALA training photos + ~18k rare-species photos (iNaturalist via GBIF, ALA outside native filter). Location: records within 25 km count fully, 25-50 km partly; none within 50 km = down-weighted. Whole photo: 5 views averaged. Season: light weight. Test photos with location + date: first guess 69%, top 5 85%, genus 90%.",
+ "whole_photo": true,
+ "season": {
+  "alpha": 2,
+  "beta": 0.75
+ }
 }

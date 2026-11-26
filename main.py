@@ -1,4 +1,4 @@
-"""AusTree Atlas desktop launcher.
+"""ArborID desktop launcher (formerly AusTree Atlas).
 
 Opens the bundled web app (app/index.html) in a native window using the
 Edge WebView2 engine that ships with Windows 10/11.
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import webview
 
-APP_NAME = "AusTree Atlas"
+APP_NAME = "ArborID"
 
 
 def resource_dir() -> Path:
@@ -21,6 +21,7 @@ def resource_dir() -> Path:
 def data_dir() -> Path:
     # Persistent browser profile so localStorage (custom specimens, theme,
     # photo cache) survives between launches.
+    # Folder keeps the old "AusTreeAtlas" name so specimens saved before the rename to ArborID are kept.
     root = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "AusTreeAtlas"
     root.mkdir(parents=True, exist_ok=True)
     return root
@@ -61,14 +62,19 @@ class Api:
             engine = self._engine()
             if not engine.available():
                 return {"error": "The identification model isn't included in this build."}
-            images = [decode_data_url(u)[0] for u in data_urls]
-            return engine.identify(images, lat=lat, lon=lon, state=state)
+            from atlas_identify import month_of
+            decoded = [decode_data_url(u) for u in data_urls]
+            images = [d[0] for d in decoded]
+            month = next((month_of(d[3]) for d in decoded if month_of(d[3])), None)   # season, from photo date
+            res = engine.identify(images, lat=lat, lon=lon, state=state, month=month)
+            res["month"] = month
+            return res
         except Exception as e:  # shown in the Identify window
             return {"error": f"Identification failed: {e}"}
 
 
 def selftest(photo: str, out: str) -> None:
-    """Build check:  "AusTree Atlas.exe" --selftest photo.jpg result.json  (no window)."""
+    """Build check:  "ArborID.exe" --selftest photo.jpg result.json  (no window)."""
     import base64
     import json
     import time

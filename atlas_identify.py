@@ -1,4 +1,4 @@
-"""Identify engine for AusTree Atlas: photo(s) + location -> ranked atlas species with percentages.
+"""Identify engine for ArborID: photo(s) + location -> ranked atlas species with percentages.
 
 Runs fully offline on the CPU:
   * image model: BioCLIP image encoder (ONNX, int8) + a species head trained on ~160,000 ALA photos
@@ -21,6 +21,30 @@ from PIL import ExifTags, Image, ImageOps
 
 MEAN = np.array([0.48145466, 0.4578275, 0.40821073], dtype=np.float32)
 STD = np.array([0.26862954, 0.26130258, 0.27577711], dtype=np.float32)
+
+
+def views(img):
+    """The whole photo, not just its centre: centre square, padded to a square, squashed to a square,
+    and squares at both ends of the long side (top/bottom or left/right). Their embeddings are averaged."""
+    img = img.convert("RGB")
+    w, h = img.size
+    s, m = max(w, h), min(w, h)
+    pad = Image.new("RGB", (s, s), tuple(int(v * 255) for v in MEAN))
+    pad.paste(img, ((s - w) // 2, (s - h) // 2))
+    if h >= w:
+        a, b = img.crop((0, 0, w, m)), img.crop((0, h - m, w, h))
+    else:
+        a, b = img.crop((0, 0, m, h)), img.crop((w - m, 0, w, h))
+    return [img, pad, img.resize((224, 224), Image.BICUBIC), a, b]
+
+
+def month_of(taken):
+    """'2026:05:24 09:14:00' -> 5"""
+    try:
+        m = int(str(taken)[5:7])
+        return m if 1 <= m <= 12 else None
+    except (TypeError, ValueError):
+        return None
 
 
 def preprocess(img, size=224):
@@ -86,12 +110,27 @@ class Identifier:
         g = np.load(self.dir / "grid.npz")
         self.g_sp, self.g_lat, self.g_lon, self.g_n = g["sp"], g["lat"], g["lon"], g["n"].astype(np.float64)
         self.states = {s: set(v) for s, v in json.loads((self.dir / "states.json").read_text()).items()}
+        self.months = None
+        if (self.dir / "months.npy").exists() and cfg.get("season"):
+            M = np.load(self.dir / "months.npy").astype(np.float64)        # [species, 12] native records by month
+            M = M + 0.5 * (np.roll(M, 1, 1) + np.roll(M, -1, 1))           # early June is near May too
+            self.months, self.month_share = M, M.sum(0) / M.sum()
         self._ready = True
+
+    def season_logprior(self, month):
+        """Favour species recorded in the photo's month (light weight: it helped only a little in testing)."""
+        c = self.cfg["season"]
+        M, q = self.months, self.month_share
+        p = (M[:, month - 1] + c["alpha"] * q[month - 1]) / (M.sum(1) + c["alpha"])
+        return c["beta"] * np.log(p / q[month - 1])
 
     # ------------------------------------------------------------------ pieces
     def photo_logprobs(self, images):
-        x = np.stack([preprocess(im) for im in images]).astype(np.float32)
-        emb = self.session.run(None, {"pixels": x})[0]
+        whole = self.cfg.get("whole_photo", False)
+        per = [views(im) if whole else [im] for im in images]
+        x = np.stack([preprocess(v) for vs in per for v in vs]).astype(np.float32)
+        emb = self.session.run(None, {"pixels": x})[0].reshape(len(images), len(per[0]), -1).mean(1)
+        emb /= np.linalg.norm(emb, axis=1, keepdims=True)
         logits = (self.scale * emb @ self.W.T + self.b) / self.cfg["temperature"]
         logits -= logits.max(1, keepdims=True)
         return logits - np.log(np.exp(logits).sum(1, keepdims=True))
@@ -116,12 +155,14 @@ class Identifier:
         return prior - np.log(np.exp(prior).sum())
 
     # ------------------------------------------------------------------ main entry
-    def identify(self, images, lat=None, lon=None, state=None, top=10):
+    def identify(self, images, lat=None, lon=None, state=None, month=None, top=10):
         """images: list of PIL images (EXIF already read). Returns ranked species with percentages."""
         self._load()
         per_photo = self.photo_logprobs(images)
         damp = self.cfg["multi_photo_damping"] if len(images) > 1 else 1.0
         logp = damp * per_photo.sum(0)
+        if month and self.months is not None:
+            logp = logp + self.season_logprior(month)
         counts = None
         if lat is not None and lon is not None:
             prior, counts = self.location_logprior(lat, lon)

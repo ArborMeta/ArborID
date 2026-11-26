@@ -1,4 +1,4 @@
-/* AusTree Atlas: Identify a plant from one or more photos.
+/* ArborID: Identify a plant from one or more photos.
  * The page sends the photos to the desktop app (main.py -> atlas_identify.py), which reads the GPS
  * position from the photos, scores every atlas species with the built-in image model, favours
  * species with native records near that position, and returns a ranked list with percentages.
@@ -174,6 +174,7 @@
         <div class="text-[11px] text-slate-400 mt-3 leading-relaxed">
           Percentages are the model's estimate that it's each of the atlas's ${ALL_SPECIES.length.toLocaleString()} species; on test photos they were roughly right on average.
           ${g ? '' : 'Without a GPS location the result relies much more on the photos alone. '}
+          ${res.month ? `Species recorded in ${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][res.month - 1]} (when the photo was taken) are favoured slightly. ` : ''}
           Exact species is hard from photos for eucalypts and wattles: check buds, fruit and leaves on the species page before relying on it.
           A plant not in the atlas (e.g. a garden or weed species) will still be matched to its nearest atlas species.</div>
       </div>`;

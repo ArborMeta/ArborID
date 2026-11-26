@@ -40,6 +40,13 @@ def main():
     states = {s["sci"]: (ranges.get(s["sci"]) or {}).get("states") or ala[s["sci"]].get("states") or []
               for s in species}
     (MODEL / "states.json").write_text(json.dumps(states), encoding="utf-8")
+
+    # native wild records by month (season step), from fetch_months.py
+    months_file = HERE / "months.jsonl"
+    if months_file.exists():
+        rows = {json.loads(l)["sci"]: json.loads(l)["months"]
+                for l in months_file.read_text(encoding="utf-8").splitlines()}
+        np.save(MODEL / "months.npy", np.array([rows.get(s["sci"], [0] * 12) for s in species], np.uint32))
     print(f"{len(sp)} cells, grid.npz {(MODEL / 'grid.npz').stat().st_size / 1e6:.1f} MB")
 
 

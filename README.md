@@ -1,18 +1,24 @@
-# AusTree Atlas
+# ArborID
+
+*Formerly AusTree Atlas.*
 
 A Windows desktop field guide to Australian trees and woody plants: **3,923 native species** with photos, native ranges, and live distribution maps drawn from the [Atlas of Living Australia](https://www.ala.org.au/).
 
 ## Identify a plant from photos
 
-Works offline. Add one or more photos of the same plant and the app ranks the most likely atlas species, each with a percentage. It reads the GPS location in the photos and favours species with native records within about 25 km (some weight out to 50 km). Without GPS, you can pick the state instead.
+Works offline. Add one or more photos of the same plant and the app ranks the most likely atlas species, each with a percentage. It reads the GPS location in the photos and favours species with native records within about 25 km (some weight out to 50 km). Without GPS, you can pick the state instead. It looks at the whole photo, not just the centre. The date the photo was taken also gives a slight boost to species recorded in that month.
 
-On test photos it hadn't seen, with location:
+On test photos it hadn't seen, with location and date:
 
-- the first guess was right 63% of the time;
-- the right species was in the top 5 83% of the time;
-- the genus was right 86% of the time.
+- the first guess was right 69% of the time;
+- the right species was in the top 5 85% of the time;
+- the genus was right 90% of the time.
 
-The percentages are calibrated: an "85%" was right about 85% of the time. The model is BioCLIP-2, trained on about 160,000 ALA photos.
+The percentages are calibrated: an "85%" was right about 85% of the time.
+
+The model is BioCLIP-2, fine-tuned on about 144,000 photos:
+- about 126,000 ALA photos;
+- about 18,000 extra photos of rarely photographed species, from iNaturalist and from ALA records outside their native range.
 
 ## Features
 
@@ -28,11 +34,11 @@ The percentages are calibrated: an "85%" was right about 85% of the time. The mo
 
 ## Download
 
-Get **`AusTree Atlas.exe`** from the [Releases](../../releases) page. It's one portable file with nothing to install.
+Get **`ArborID.exe`** from the [Releases](../../releases) page. It's one portable file with nothing to install.
 
 - Needs Windows 10 or 11 (64-bit) with the Microsoft Edge WebView2 Runtime. Windows 11 has it built in.
 - The `.exe` isn't digitally signed, so Windows may say "Windows protected your PC". Choose **More info → Run anyway**.
-- Specimens you add are saved per user in `%LOCALAPPDATA%\AusTreeAtlas`.
+- Specimens you add are saved per user in `%LOCALAPPDATA%\AusTreeAtlas`. The folder kept its name when the app was renamed from AusTree Atlas, so earlier specimens carry over.
 
 ## Build from source
 
@@ -44,7 +50,7 @@ python -m venv .venv
 build.bat
 ```
 
-The result is `dist\AusTree Atlas.exe`. To run without building, use `.venv\Scripts\python main.py`.
+The result is `dist\ArborID.exe`. To run without building, use `.venv\Scripts\python main.py`.
 
 ## Project layout
 
@@ -74,16 +80,37 @@ Run these from the project folder with `.venv\Scripts\python`:
 3. `tools/fetch_act.py` checks ACT status against the Australian Plant Census. It's slow (about 30–60 s per species), so it runs in the background.
 4. Optional, to refresh the photo sections: in `experiments/photo-sort`, create a separate venv from its `requirements.txt` (PyTorch with CUDA for an NVIDIA GPU). Then run `full_run.py`, which takes about 1–2 hours on an RTX 4090 and is resumable, followed by `build_app_data.py`.
 5. Optional, to rebuild the Identify model: in `experiments/photo-sort` with its venv, run these scripts from `identify/` in order:
-   - `download_train.py` (about 10 min, 3 GB of photos)
-   - `fetch_grid.py`
-   - `embed.py bioclip-2` (about 10 min on a GPU)
-   - `build_grid.py`
-   - `fetch_coords.py`
-   - `train.py bioclip-2 --final`
-   - `eval_location.py bioclip-2`
-   - `export_onnx.py bioclip-2`
+   - Data:
+     - `download_train.py` (about 10 min, 3 GB of photos)
+     - `fetch_grid.py`
+     - `fetch_extra.py` (rare-species photos, about 1 hour)
+     - `embed.py bioclip-2`
+     - `embed_extra.py bioclip-2`
+     - `build_grid.py`
+     - `fetch_coords.py`
+     - `fetch_months.py`, then `build_grid.py` again (it also writes `months.npy`)
+   - Model:
+     - `train.py bioclip-2`
+     - `finetune.py` (about 1–2 hours on an RTX 4090)
+     - `embed.py bioclip-2-ft`
+     - `embed_extra.py bioclip-2-ft`
+     - `train.py bioclip-2-ft --extra --final`
+     - `export_onnx.py bioclip-2-ft`
+   - Tests:
+     - `embed_views.py bioclip-2-ft`
+     - `eval_extras.py bioclip-2-ft eval_bioclip-2-ft_extra.npz` (accuracy with location, whole photo and season)
 
-   Then copy `bioclip-2_visual_w8.onnx`, `bioclip-2_head.npz`, `grid.npz`, `species.json` and `states.json` from `identify/model/` into `model/`. Copy `identify_config_bioclip-2.json` there too, renamed to `identify_config.json`.
+   Then copy these files from `identify/model/` into `model/`:
+   - `bioclip-2-ft_visual_w8.onnx`
+   - `bioclip-2-ft_head.npz`
+   - `grid.npz`
+   - `months.npy`
+   - `species.json`
+   - `states.json`
+
+   Set the temperature in `model/identify_config.json` to the trained temperature divided by the `image_temp` value reported by `eval_extras.py`.
+
+   Rare-species photos by a photographer who also has a test photo of that species are excluded, so the accuracy figures aren't inflated.
 6. Run `build.bat` to rebuild the `.exe`.
 
 ## Data sources and limitations
@@ -96,7 +123,7 @@ Run these from the project folder with `.venv\Scripts\python`:
 
 - Identify works best for well-photographed species with several photos.
   - Exact eucalypts and wattles are often uncertain from one photo, so check buds, fruit and leaves on the species page.
-  - Species with few ALA photos (424 have fewer than 5) are recognised mainly from their name and genus, so they're weaker.
+  - Rarely photographed species are weaker. For species with fewer than 30 ALA field photos, the first guess from a photo alone was right about 25% of the time, against about 50% overall.
   - A plant that isn't in the atlas (a garden plant or a weed) is still matched to its closest atlas species.
 
 See [DATA-LICENSES.md](DATA-LICENSES.md) for credits and licences.
