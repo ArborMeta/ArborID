@@ -2,6 +2,18 @@
 
 A Windows desktop field guide to Australian trees and woody plants: **3,923 native species** with photos, native ranges, and live distribution maps drawn from the [Atlas of Living Australia](https://www.ala.org.au/).
 
+## Identify a plant from photos
+
+Works offline. Add one or more photos of the same plant and the app ranks the most likely atlas species, each with a percentage. It reads the GPS location in the photos and favours species with native records within about 25 km (some weight out to 50 km). Without GPS, you can pick the state instead.
+
+On test photos it hadn't seen, with location:
+
+- the first guess was right 63% of the time;
+- the right species was in the top 5 83% of the time;
+- the genus was right 86% of the time.
+
+The percentages are calibrated: an "85%" was right about 85% of the time. The model is BioCLIP-2, trained on about 160,000 ALA photos.
+
 ## Features
 
 - **Browse and search** 3,923 species from 91 genera, including *Eucalyptus*, *Acacia*, *Banksia*, *Ficus* and *Melaleuca*. Each has at least 50 ALA records.
@@ -11,12 +23,7 @@ A Windows desktop field guide to Australian trees and woody plants: **3,923 nati
 - **Native ranges** per state, from Kew's World Checklist of Vascular Plants, with the ACT checked against the Australian Plant Census.
 - **Species page** (needs internet): a map of native-range records, records by state and month, the Wikipedia description, common names, conservation status and classification.
 - **Photos by plant part:** each species page has **Flowers, Fruit & seeds, Leaves, Bark and Tree** sections. They draw on about 162,000 native-range ALA photos, sorted automatically by an image-recognition model (OpenCLIP ViT-H/14, DFN-5B). The Bark section also shows Wikimedia Commons bark photos. About 1,900 species have bark photos.
-- **Identify a plant from photos** (works offline). Add one or more photos of the same plant and the app ranks the most likely atlas species, each with a percentage. It reads the GPS location in the photos and favours species with native records within about 25 km (some weight out to 50 km). Without GPS, you can pick the state instead. On test photos it hadn't seen, with location:
-  - the first guess was right 63% of the time;
-  - the right species was in the top 5 83% of the time;
-  - the genus was right 86% of the time.
-
-  The percentages are calibrated: an "85%" was right about 85% of the time. The model is BioCLIP-2, trained on about 160,000 ALA photos.
+- **Identify a plant from photos**, offline, with GPS-aware percentages (see [above](#identify-a-plant-from-photos)).
 - **Add your own specimens.** You can also export a list as CSV or save a specimen sheet.
 
 ## Download
